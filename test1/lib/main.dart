@@ -96,12 +96,20 @@ class _MyHomePageState extends State<MyHomePage> {
           // horizontal).
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text(
-              'You are on page',
-            ),
             Text(
-              '$_selectedPageIndex',
-              style: Theme.of(context).textTheme.headline4,
+              'Looks like you haven\'t entered your sleep data for today',
+              style: Theme.of(context).textTheme.headlineSmall,
+              textAlign: TextAlign.center,
+            ),
+            TextButton(
+              child: Text("Enter Data"),
+              style: ButtonStyle(
+                shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                    RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18.0),
+                        side: BorderSide(color: Colors.red))),
+              ),
+              onPressed: () {},
             ),
           ],
         ),
