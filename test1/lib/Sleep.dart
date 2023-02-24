@@ -1,0 +1,81 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'package:intl/intl.dart';
+
+import 'dart:convert';
+import 'dart:io';
+
+Future<List<Map>> readJsonFile(String filePath) async {
+  var input = await File(filePath).readAsString();
+  var map = jsonDecode(input);
+  return map['users'];
+}
+
+class Sleep {
+  late DateTime sleep_start; //Date Object
+  late DateTime sleep_end;
+  late int sleep_quality; //receives score 0-100
+  late int sleep_duration; //receives time in seconds
+
+  Sleep(){//can't be asynchronous, so just initializes values to 0
+    //this is a false constructor, please use the static method create() to return a Sleep object
+    //built from a json file
+    this.sleep_start =DateTime.now();
+    this.sleep_end =DateTime.now();
+    this.sleep_quality=0;
+    this.sleep_duration=0;
+  }
+
+  static Future<Sleep> create(String filePath) async{
+    var input = await File(filePath).readAsString();
+    var map = jsonDecode(input);
+
+    var sleep_instance = new Sleep();
+
+    sleep_instance.sleep_start =DateTime.parse(map['bedtime_start']);
+    sleep_instance.sleep_end =DateTime.parse(map['bedtime_end']);
+    sleep_instance.sleep_quality=map['score'];
+    sleep_instance.sleep_duration=map['duration'];
+
+    return sleep_instance;
+
+  }
+
+  DateTime getSleepStart(){
+    return this.sleep_start;
+  }
+
+  DateTime getSleepEnd(){
+    return this.sleep_end;
+  }
+
+  int getSleepQuality(){
+    return this.sleep_quality;
+  }
+
+  int getSleepDuration(){
+    return this.sleep_duration;
+  }
+
+  String getSleepDurationInHours(){
+    double tempduration = this.sleep_duration.toDouble();
+    tempduration = tempduration/3600; //simplify to hours
+    return tempduration.toString();
+    //returning as string because realistically all calculations will use the default seconds
+    //this is just used for pretty printing to UI or something
+  }
+
+  void printSleepDetails(){
+    debugPrint("Sleep Start: " + this.sleep_start.toString());
+    debugPrint("Sleep End: " + this.sleep_end.toString());
+    debugPrint("Sleep Quality: " + this.sleep_quality.toString());
+    debugPrint("Sleep Duration: " + this.sleep_duration.toString());
+
+  }
+
+
+
+}
