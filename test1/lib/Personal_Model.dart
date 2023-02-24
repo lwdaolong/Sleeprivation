@@ -51,15 +51,29 @@ class Person {
   Time getRecommendedBedTime(){
     //TODO get time recommendation based on goals and recent logs
     return new Time(6,30);
+    //find calculation of bed time, ideally from recent logs
+    //use the returned time to schedule a notification
   }
 
   void getCaffeineRecomendation(){
 
     //TODO
+
+    //based on some metric, schedule a caffeine recommendation x hours
+    //before bedtime
+
+    //if caffeine has already been consumed
+    //rescind the notification
+
+    //if no caffeine has been consumed
+    //send a notfication for a last chance
   }
 
   void getActivityRecommendation(){
     //TODO
+
+    //send notification near workout times
+    //remind them that activity helps sleep
   }
 
   bool hadCaffeine(){

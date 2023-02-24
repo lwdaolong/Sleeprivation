@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'firebase_options.dart';
+import 'package:test1/notifi_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  NotificationService().initNotification();
   await Firebase.initializeApp();
 
   FirebaseMessaging messaging = FirebaseMessaging.instance;
@@ -142,7 +144,10 @@ class _MyHomePageState extends State<MyHomePage> {
                         borderRadius: BorderRadius.circular(18.0),
                         side: BorderSide(color: Colors.red))),
               ),
-              onPressed: () {},
+              onPressed: () {
+                NotificationService()
+                    .showNotification(title: 'Sample title', body: 'It works!');
+              },
             ),
           ],
         ),
