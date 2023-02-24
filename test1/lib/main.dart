@@ -146,7 +146,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               onPressed: () {
                 NotificationService()
-                    .showNotification(title: 'Sample title', body: 'It works!');
+                    .showNotification(title: 'Bed Time!', body: 'Get 8 full hours!');
               },
             ),
           ],
