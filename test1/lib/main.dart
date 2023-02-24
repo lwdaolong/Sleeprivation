@@ -1,8 +1,17 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-void main() {
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+
   runApp(const MyApp());
 }
+
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -25,7 +34,37 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.red,
       ),
-      home: const MyHomePage(title: 'Sleeprivation'),
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Text('Firebase'),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed:  ()=> FirebaseFirestore.instance
+            .collection('testing')
+            .add({'timestamp': Timestamp.fromDate(DateTime.now())}),
+          child:Icon(Icons.add),
+        ),
+        body: StreamBuilder(
+          stream: FirebaseFirestore.instance.collection('testing').snapshots(),
+          builder: (
+            BuildContext context,
+              AsyncSnapshot<QuerySnapshot> snapshot,
+          ){
+            if (!snapshot.hasData) return const SizedBox.shrink();
+            return ListView.builder(
+                itemCount: snapshot.data?.docs.length,
+                itemBuilder: (BuildContext context, int index){
+                  final docData = snapshot.data?.docs[index];
+                  final dateTime = (docData!['timestamp'] as Timestamp).toDate();
+                  return ListTile(
+                    title: Text(dateTime.toString()),
+                  );
+                },
+
+            );
+          },
+        ),
+      ),
     );
   }
 }
@@ -199,3 +238,34 @@ class _MyHomePageState extends State<MyHomePage> {
   //     ), // This trailing comma makes auto-formatting nicer for build methods.
   //   );
   // }
+
+
+/*
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  //TEST
+  // This widget is the root of your application.
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Sleeprivation',
+      theme: ThemeData(
+        // This is the theme of your application.
+        //
+        // Try running your application with "flutter run". You'll see the
+        // application has a blue toolbar. Then, without quitting the app, try
+        // changing the primarySwatch below to Colors.green and then invoke
+        // "hot reload" (press "r" in the console where you ran "flutter run",
+        // or simply save your changes to "hot reload" in a Flutter IDE).
+        // Notice that the counter didn't reset back to zero; the application
+        // is not restarted.
+        primarySwatch: Colors.red,
+      ),
+      home: const MyHomePage(title: 'Sleeprivation'),
+    );
+  }
+}
+
+ */
