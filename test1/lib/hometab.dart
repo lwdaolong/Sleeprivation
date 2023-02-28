@@ -23,44 +23,61 @@ class _MyHomeTab extends State<HomeTab> {
   }
 }
 
-class EnterDataTab extends StatelessWidget {
+class EnterDataTab extends StatefulWidget {
+  const EnterDataTab({super.key, this.dataEntered = false});
+  final bool dataEntered;
+  @override
+  State<EnterDataTab> createState() => _EnterDataTabState();
+}
+
+class _EnterDataTabState extends State<EnterDataTab> {
+  bool dataEntered = false;
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 30),
-            child: Text(
-              'Looks like you haven\'t entered your sleep data for today',
-              style: Theme.of(context).textTheme.headlineSmall,
-              textAlign: TextAlign.center,
+    if (dataEntered) {
+      return Text("entered data");
+    } else {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 30),
+              child: Text(
+                'Looks like you haven\'t entered your sleep data for today',
+                style: Theme.of(context).textTheme.headlineSmall,
+                textAlign: TextAlign.center,
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: OutlinedButton(
-                style: OutlinedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(18.0),
-                  ),
-                  side: BorderSide(width: 1),
-                ),
-                child: Text('Enter data',
-                    style: Theme.of(context).textTheme.bodyLarge),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => EnterDataModal(),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18.0),
                     ),
-                  );
-                }),
-          ),
-        ],
-      ),
-    );
+                    side: BorderSide(width: 1),
+                  ),
+                  child: Text('Enter data',
+                      style: Theme.of(context).textTheme.bodyLarge),
+                  onPressed: () async {
+                    var result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => EnterDataModal(),
+                      ),
+                    );
+                    if (result == "finished") {
+                      setState(() {
+                        dataEntered = true;
+                      });
+                    }
+                  }),
+            ),
+          ],
+        ),
+      );
+    }
   }
 }
 
@@ -99,7 +116,7 @@ class _EnterDataModal extends State<EnterDataModal> {
                       child: Text('Submit data',
                           style: Theme.of(context).textTheme.bodyLarge),
                       onPressed: () {
-                        Navigator.pop(context);
+                        Navigator.pop(context, "finished");
                       }),
                 ],
               ),
