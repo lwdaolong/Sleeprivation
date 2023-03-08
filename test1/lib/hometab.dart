@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'globals.dart' as globals;
 
 class HomeTab extends StatefulWidget {
-  const HomeTab({super.key, this.dataEntered = false});
-  final bool dataEntered;
+  const HomeTab({super.key});
   @override
   State<HomeTab> createState() => _MyHomeTab();
 }
@@ -14,28 +14,8 @@ class HomeTab extends StatefulWidget {
 class _MyHomeTab extends State<HomeTab> {
   @override
   Widget build(BuildContext context) {
-    if (widget.dataEntered) {
-      return Container(
-          child: Center(child: Container(child: Text('home tab'))));
-    } else {
-      return EnterDataTab();
-    }
-  }
-}
-
-class EnterDataTab extends StatefulWidget {
-  const EnterDataTab({super.key, this.dataEntered = false});
-  final bool dataEntered;
-  @override
-  State<EnterDataTab> createState() => _EnterDataTabState();
-}
-
-class _EnterDataTabState extends State<EnterDataTab> {
-  bool dataEntered = false;
-  @override
-  Widget build(BuildContext context) {
-    if (dataEntered) {
-      return Text("entered data");
+    if (globals.dataEntered) {
+      return const Text("entered data");
     } else {
       return Center(
         child: Column(
@@ -69,7 +49,7 @@ class _EnterDataTabState extends State<EnterDataTab> {
                     );
                     if (result == "finished") {
                       setState(() {
-                        dataEntered = true;
+                        globals.dataEntered = true;
                       });
                     }
                   }),
