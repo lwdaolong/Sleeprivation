@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'rectab.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -15,7 +16,7 @@ class _MyHomeTab extends State<HomeTab> {
   @override
   Widget build(BuildContext context) {
     if (globals.dataEntered) {
-      return const Text("entered data");
+      return RecTab();
     } else {
       return Center(
         child: Column(
@@ -41,13 +42,13 @@ class _MyHomeTab extends State<HomeTab> {
                   child: Text('Enter data',
                       style: Theme.of(context).textTheme.bodyLarge),
                   onPressed: () async {
-                    var result = await Navigator.push(
+                    var finishedDataEntry = await Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => EnterDataModal(),
                       ),
                     );
-                    if (result == "finished") {
+                    if (finishedDataEntry) {
                       setState(() {
                         globals.dataEntered = true;
                       });
@@ -96,7 +97,7 @@ class _EnterDataModal extends State<EnterDataModal> {
                       child: Text('Submit data',
                           style: Theme.of(context).textTheme.bodyLarge),
                       onPressed: () {
-                        Navigator.pop(context, "finished");
+                        Navigator.pop(context, true);
                       }),
                 ],
               ),

@@ -1,7 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:overlay_support/overlay_support.dart';
+import 'package:test1/login.dart';
 import 'hometab.dart';
 import 'logtab.dart';
+import 'login.dart';
 import 'globals.dart' as globals;
 
 import 'package:firebase_core/firebase_core.dart';
@@ -20,13 +23,54 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Sleeprivation',
-      theme: ThemeData(
-        primarySwatch: Colors.red,
+    return OverlaySupport(
+      child: MaterialApp(
+        title: 'Sleeprivation',
+        routes: {
+          '/': (context) => Landing(),
+          '/login': (context) => LoginForm(title: 'Sleeprivation'),
+          '/home': (context) => MyHomePage(title: 'Sleeprivation')
+        },
+        theme: ThemeData(
+          primarySwatch: Colors.red,
+        ),
+        // home: const MyHomePage(title: 'Sleeprivation'),
       ),
-      home: const MyHomePage(title: 'Sleeprivation'),
     );
+  }
+}
+
+class Landing extends StatefulWidget {
+  @override
+  _LandingState createState() => _LandingState();
+}
+
+class _LandingState extends State<Landing> {
+  @override
+  void initState() {
+    super.initState();
+    _loadUserInfo();
+  }
+
+  _loadUserInfo() async {
+    // SharedPreferences prefs = await SharedPreferences.getInstance();
+    String username = "";
+    if (username == "") {
+      Future.delayed(Duration.zero, () {
+        Navigator.of(context)
+            .pushNamedAndRemoveUntil('/login', ModalRoute.withName('/login'));
+      });
+    } else {
+      Future.delayed(Duration.zero, () {
+        Navigator.of(context)
+            .pushNamedAndRemoveUntil('/home', ModalRoute.withName('/home'));
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(body: Center(child: Text("Loading")));
   }
 }
 
