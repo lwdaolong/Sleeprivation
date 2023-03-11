@@ -8,7 +8,7 @@ import 'package:intl/intl.dart';
 
 
 class Tiredness {
-  late int tired_score;
+  late int tired_score; //int between 0 and 10
 
   Tiredness(int tired_score){
     if(tired_score >=0 && tired_score <=10){
@@ -18,6 +18,10 @@ class Tiredness {
       this.tired_score =-1;
       //indicate error
     }
+  }
+
+  static Tiredness parse(String score){
+    return Tiredness(int.parse(score));
   }
 
   int getTiredScore(){

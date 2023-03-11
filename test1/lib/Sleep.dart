@@ -18,22 +18,26 @@ class Sleep {
   late DateTime sleep_start; //Date Object
   late DateTime sleep_end;
   late int sleep_quality; //receives score 0-100
-  late int sleep_duration; //receives time in seconds
+  late int sleep_duration; //receives time in minutes
 
-  Sleep(){//can't be asynchronous, so just initializes values to 0
+  Sleep(DateTime sleep_start, DateTime sleep_end, int sleep_quality){//can't be asynchronous, so just initializes values to 0
     //this is a false constructor, please use the static method create() to return a Sleep object
     //built from a json file
-    this.sleep_start =DateTime.now();
-    this.sleep_end =DateTime.now();
-    this.sleep_quality=0;
-    this.sleep_duration=0;
+    this.sleep_start = sleep_start;
+    this.sleep_end = sleep_end;
+    this.sleep_quality=sleep_quality;
+    this.sleep_duration= sleep_start.difference(sleep_end).inMinutes.abs();
+  }
+
+  static Sleep parse(String start, String end, String quality){
+    return Sleep(DateTime.parse(start), DateTime.parse(end), int.parse(quality));
   }
 
   static Future<Sleep> create(String filePath) async{
     var input = await File(filePath).readAsString();
     var map = jsonDecode(input);
 
-    var sleep_instance = new Sleep();
+    var sleep_instance = new Sleep(DateTime.now(),DateTime.now(),50);
 
     sleep_instance.sleep_start =DateTime.parse(map['bedtime_start']);
     sleep_instance.sleep_end =DateTime.parse(map['bedtime_end']);

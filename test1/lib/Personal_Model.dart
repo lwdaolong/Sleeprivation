@@ -24,7 +24,7 @@ class Personal_Model {
     this.name = name;
     this.logs = []; //ever evolving list of daily logs (Sleeprivation Day)
     this.goals = goals; //established when personal profile is created
-    this.today = Sleeprivation_Day();
+    this.today = Sleeprivation_Day.getNewEmptyDay();
   }
 
   List getLogs(){
@@ -172,7 +172,6 @@ class Personal_Model {
 
   }
 
-  //TODO make nonDebug version that uses Class.name attribute  rather than needing it as argument
   //sets Goal and pushes to DB
   Future<void> setGoalDebug(String username, Goals newgoal) async{
     
@@ -192,6 +191,45 @@ class Personal_Model {
     this.goals = newgoal;
   }
 
+  //simultaneously sets Goal in memory and Database
+  Future<void> setGoal( Goals newgoal) async{
+
+    //set reference
+    final goalref = FirebaseFirestore.instance.collection("users")
+        .doc(this.name)
+        .collection("Goals")
+        .doc("user_goals")
+        .withConverter(
+      fromFirestore: Goals.fromFirestore,
+      toFirestore: (Goals tempgoal, _) => tempgoal.toFirestore(),
+    );
+
+    //update goal DB
+    await goalref.set(newgoal);
+
+    this.goals = newgoal;
+  }
+
+  //Look's up this Personal Model's instance's name
+  // in the database, and updates the 'goals' attribute
+  // if 'name' not found in database, crash will occur
+  Future<void> updateGoalsfromDB() async{
+    //set reference
+    final goalref = FirebaseFirestore.instance.collection("users")
+        .doc(this.name)
+        .collection("Goals")
+        .doc("user_goals")
+        .withConverter(
+      fromFirestore: Goals.fromFirestore,
+      toFirestore: (Goals tempgoal, _) => tempgoal.toFirestore(),
+    );
+
+    var newgoaldata = await goalref.get();
+    Goals newgoal = newgoaldata.data() as Goals;
+    this.goals = newgoal;
+
+  }
+
   Future<void> updateGoalsfromDBDebug(String username) async{
     //set reference
     final goalref = FirebaseFirestore.instance.collection("users")
@@ -209,19 +247,110 @@ class Personal_Model {
 
   }
 
+  Future<void> setTodayDB( Sleeprivation_Day newday) async{
 
+    //set reference
+    final todayref = FirebaseFirestore.instance.collection("users")
+        .doc(this.name)
+        .collection("Curr_Day")
+        .doc("today")
+        .withConverter(
+      fromFirestore: Sleeprivation_Day.fromFirestore,
+      toFirestore: (Sleeprivation_Day tempday, _) => tempday.toFirestore(),
+    );
 
-  void setDBTodayCaffeine(){
+    //update goal DB
+    await todayref.set(newday);
 
+    this.today = newday;
+  }
 
+  Future<void> updateTodayFromDB() async{
+    //set reference
+    final todayref = FirebaseFirestore.instance.collection("users")
+        .doc(this.name)
+        .collection("Curr_Day")
+        .doc("today")
+        .withConverter(
+      fromFirestore: Sleeprivation_Day.fromFirestore,
+      toFirestore: (Sleeprivation_Day tempday, _) => tempday.toFirestore(),
+    );
 
+    var newdaydata = await todayref.get();
+    Sleeprivation_Day newday = newdaydata.data() as Sleeprivation_Day;
+    this.today = newday;
 
   }
 
+
+  //TODO retrieve all logs
+  Future<void> retrieveAllLogsDB() async{
+    //set reference
+    final todayref = FirebaseFirestore.instance.collection("users")
+        .doc(this.name)
+        .collection("Day_Logs")
+        .withConverter(
+      fromFirestore: Sleeprivation_Day.fromFirestore,
+      toFirestore: (Sleeprivation_Day tempday, _) => tempday.toFirestore(),
+    );
+
+    var newdaydata = await todayref.get();
+
+    //empty logs before re-instantiating from database
+    this.logs =[];
+    for (var docSnapshot in newdaydata.docs){
+      Sleeprivation_Day newday = docSnapshot.data() as Sleeprivation_Day;
+      this.logs.add(newday);
+    }
+
+  }
+
+
+  //TODO push current day into logs and into DB
+  Future<void> pushTodayIntoLogsDB() async{
+
+    //set reference
+    final todayref = FirebaseFirestore.instance.collection("users")
+        .doc(this.name)
+        .collection("Day_Logs")
+        .doc(this.today.date.toString())
+        .withConverter(
+      fromFirestore: Sleeprivation_Day.fromFirestore,
+      toFirestore: (Sleeprivation_Day tempday, _) => tempday.toFirestore(),
+    );
+
+    //update goal DB
+    await todayref.set(this.today);
+
+    this.logs.add(this.today);
+    //Maybe set today to a null day after to rest?
+  }
+
+  //TODO retrieve 7 most recent logs
+  //just do like all logs, but limit to 7 and add/don't add to logs based on query
+
+  //potentially set all logs? could be dangerous but useful for debugging
+
+
+
   //TODO create new User with Goals
+  Future<void> createNewUserDB() async{
+    //create intiial user collection based on username
+  }
+
   //TODO push user data into DB
+  Future<void> saveUserDetailsDB() async{
+    //probably rarely needed, but save entire Personal model to DB
+    //would rather call saves on specific attributes when needed
+    //expensive to save model
+  }
+
   //TODO instantiate user from DB
-  //TODO modify DB attributes of User
+  Future<void> instantiateUserFromDB() async{
+    //looks for collection of this.name
+    //instantiates attributes based on collection in DB
+  }
+
 
 
 

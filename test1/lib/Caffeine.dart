@@ -13,6 +13,11 @@ class Caffeine {
 
   Caffeine({this.caffeine_time});
 
+  static Caffeine parse(String s){ //assuming s is a real DateTime String
+    DateTime parseDate = DateTime.parse(s);
+    return Caffeine(caffeine_time: parseDate);
+  }
+
   DateTime? getCaffeineTime(){
     return this.caffeine_time;
   }

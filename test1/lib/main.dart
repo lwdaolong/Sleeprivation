@@ -5,12 +5,16 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:test1/Activity.dart';
 import 'firebase_options.dart';
 import 'package:test1/notifi_service.dart';
 
 import 'Caffeine.dart';
 import 'Goals.dart';
 import 'Personal_Model.dart';
+import 'Sleeprivation_Day.dart';
+import 'Tiredness.dart';
+import 'Sleep.dart';
 
 
 void main() async {
@@ -46,6 +50,10 @@ void main() async {
 
 
 
+  
+
+
+
 
   //caffeine FireStore Test
   var caftest = Caffeine(
@@ -67,17 +75,22 @@ void main() async {
   Goals logangoals = new Goals(5*60, TimeOfDay(hour:12,minute: 30));
   Personal_Model new_user = new Personal_Model("Logan", logangoals);
 
-  new_user.goals.print();
 
-  Goals logannewgoals = new Goals(8*60, TimeOfDay(hour:8,minute: 30));
-  await new_user.setGoalDebug("Logan", logannewgoals);
-  new_user.goals.print();
+  Sleep testsleep = Sleep.parse("2023-03-09 14:11:06.039", "2023-03-13 14:11:06.039", "60");
+
+  Sleeprivation_Day testday = new Sleeprivation_Day(DateTime.parse("2023-03-09 22:16:40.805"), caftest, testsleep, Tiredness(5), Activity(4500));
+  await new_user.setTodayDB(testday);
+
+  new_user.today.debuglog();
+  //await new_user.updateTodayFromDB();
+  //print('Newly updated day based on DB');
+  //new_user.today.debuglog();
 
 
-  await new_user.updateGoalsfromDBDebug("Logan");
-
-  new_user.goals.print();
-
+  new_user.pushTodayIntoLogsDB();
+  await new_user.retrieveAllLogsDB();
+  print('log length');
+  print(new_user.logs.length);
 
   //!!!!!!!!!!!!!!
 
