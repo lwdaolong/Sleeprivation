@@ -1,4 +1,4 @@
-// @dart=2.9
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -10,19 +10,19 @@ import 'package:test1/Activity.dart';
 import 'firebase_options.dart';
 
 class Sleeprivation_Day {
-  DateTime date;
-  Caffeine caffeine; //maybe change to list for multiple caffeine intakes?
-  Sleep sleep;
-  Tiredness tiredness;
-  Activity activity;
+  late DateTime date;
+  late Caffeine caffeine; //maybe change to list for multiple caffeine intakes?
+  late Sleep sleep;
+  late Tiredness tiredness;
+  late Activity activity;
 
   Sleeprivation_Day(){
     //because a given day will be updated dynamically, the default class sets everything to null
     this.date = DateTime.now();
-    this.caffeine = null;
-    this.sleep = null;
-    this.tiredness = null;
-    this.activity = null;
+    this.caffeine = new Caffeine();
+    this.sleep = new Sleep();
+    this.tiredness = new Tiredness(100);
+    this.activity = new Activity();
 
   }
 

@@ -1,10 +1,17 @@
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'firebase_options.dart';
 import 'package:test1/notifi_service.dart';
+
+import 'Caffeine.dart';
+import 'Goals.dart';
+import 'Personal_Model.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,10 +41,92 @@ void main() async {
     }
   });
 
+  //playground
+
+
+
+
+
+  //caffeine FireStore Test
+  var caftest = Caffeine(
+    caffeine_time: DateTime.now(),
+  );
+  
+  var docRef = FirebaseFirestore.instance
+      .collection("testing_new")
+  .withConverter(
+      fromFirestore: Caffeine.fromFirestore,
+      toFirestore: (Caffeine caftest, options) => caftest.toFirestore(),
+  )
+  .doc("idk");
+  await docRef.set(caftest);
+  
+
+  //Personal Model Tests
+  //Personal_Model.getUserFromDB('Logan');
+  Goals logangoals = new Goals(5*60, TimeOfDay(hour:12,minute: 30));
+  Personal_Model new_user = new Personal_Model("Logan", logangoals);
+
+  new_user.goals.print();
+
+  Goals logannewgoals = new Goals(8*60, TimeOfDay(hour:8,minute: 30));
+  await new_user.setGoalDebug("Logan", logannewgoals);
+  new_user.goals.print();
+
+
+  await new_user.updateGoalsfromDBDebug("Logan");
+
+  new_user.goals.print();
+
+
+  //!!!!!!!!!!!!!!
+
+
+  TimeOfDay wake = TimeOfDay(hour: 8,minute: 30);
+  print("You should sleep at ");
+  print(calculateAppropriateBedTime(wake, 8*60));
+  print("if you wake up at ");
+  print(wake);
+  print("and you want to sleep for 8 hours");
+
+  //playground
+
+
   runApp(const MyApp());
+}
+//TODO use in model class to convert for comparisons
+int toInt(TimeOfDay myTime){
+  return myTime.hour*60 + myTime.minute;
+}
+
+int toTimeInt(int hours, int minutes){
+  return hours*60 + minutes;
+}
+
+TimeOfDay toTimeOfDay(int timeInt){
+  int hours = (timeInt/60).toInt();
+  int minutes = timeInt %60;
+  return TimeOfDay(hour: hours, minute: minutes);
+}
+
+//duration should be in the form of an int in minutes required to sleep,
+//maybe make another helper function that turns a duration in the form of hours/minutes into one singular int of minutes
+TimeOfDay calculateAppropriateBedTime(TimeOfDay wakeup, int duration){
+  int wakeupint = toInt(wakeup);
+  int bedtime = wakeupint - duration;
+
+  if(bedtime >= 0){
+    return toTimeOfDay(bedtime);
+  }else{
+    int yesterday = 24*60; //e.g. midnight in minutes
+    return toTimeOfDay(yesterday + bedtime);
+  }
+
 }
 
 
+
+//AAAHHAHAHHAHAHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH PLAYGROUND^^ TODO MOVE EVERYTHING ABOVE INTO OTHER MODULES
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -60,7 +149,37 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.red,
       ),
-      home: const MyHomePage(title: 'Sleeprivation'),
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Text('Firebase'),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed:  ()=> FirebaseFirestore.instance
+              .collection('testing')
+              .add({'timestamp': Timestamp.fromDate(DateTime.now())}),
+          child:Icon(Icons.add),
+        ),
+        body: StreamBuilder(
+          stream: FirebaseFirestore.instance.collection('testing').snapshots(),
+          builder: (
+              BuildContext context,
+              AsyncSnapshot<QuerySnapshot> snapshot,
+              ){
+            if (!snapshot.hasData) return const SizedBox.shrink();
+            return ListView.builder(
+              itemCount: snapshot.data?.docs.length,
+              itemBuilder: (BuildContext context, int index){
+                final docData = snapshot.data?.docs[index];
+                final dateTime = (docData!['timestamp'] as Timestamp).toDate();
+                return ListTile(
+                  title: Text(dateTime.toString()),
+                );
+              },
+
+            );
+          },
+        ),
+      ),
     );
   }
 }
@@ -265,6 +384,7 @@ class MyApp extends StatelessWidget {
  */
 
 /*
+FIREBASE CODE
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -320,4 +440,217 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+ */
+
+/*
+NOTIFICATION CODE
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  //TEST
+  // This widget is the root of your application.
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Sleeprivation',
+      theme: ThemeData(
+        // This is the theme of your application.
+        //
+        // Try running your application with "flutter run". You'll see the
+        // application has a blue toolbar. Then, without quitting the app, try
+        // changing the primarySwatch below to Colors.green and then invoke
+        // "hot reload" (press "r" in the console where you ran "flutter run",
+        // or simply save your changes to "hot reload" in a Flutter IDE).
+        // Notice that the counter didn't reset back to zero; the application
+        // is not restarted.
+        primarySwatch: Colors.red,
+      ),
+      home: const MyHomePage(title: 'Sleeprivation'),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key, required this.title});
+
+  // This widget is the home page of your application. It is stateful, meaning
+  // that it has a State object (defined below) that contains fields that affect
+  // how it looks.
+
+  // This class is the configuration for the state. It holds the values (in this
+  // case the title) provided by the parent (in this case the App widget) and
+  // used by the build method of the State. Fields in a Widget subclass are
+  // always marked "final".
+
+  final String title;
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  int _selectedPageIndex = 0;
+
+  void _onNavigationBarSelected(int index) {
+    setState(() {
+      // This call to setState tells the Flutter framework that something has
+      // changed in this State, which causes it to rerun the build method below
+      // so that the display can reflect the updated values. If we changed
+      // _counter without calling setState(), then the build method would not be
+      // called again, and so nothing would appear to happen.
+      _selectedPageIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // This method is rerun every time setState is called, for instance as done
+    // by the _incrementCounter method above.
+    //
+    // The Flutter framework has been optimized to make rerunning build methods
+    // fast, so that you can just rebuild anything that needs updating rather
+    // than having to individually change instances of widgets.
+    return Scaffold(
+      appBar: AppBar(
+        // Here we take the value from the MyHomePage object that was created by
+        // the App.build method, and use it to set our appbar title.
+        title: Text(widget.title),
+      ),
+      body: Center(
+        // Center is a layout widget. It takes a single child and positions it
+        // in the middle of the parent.
+        child: Column(
+          // Column is also a layout widget. It takes a list of children and
+          // arranges them vertically. By default, it sizes itself to fit its
+          // children horizontally, and tries to be as tall as its parent.
+          //
+          // Invoke "debug painting" (press "p" in the console, choose the
+          // "Toggle Debug Paint" action from the Flutter Inspector in Android
+          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
+          // to see the wireframe for each widget.
+          //
+          // Column has various properties to control how it sizes itself and
+          // how it positions its children. Here we use mainAxisAlignment to
+          // center the children vertically; the main axis here is the vertical
+          // axis because Columns are vertical (the cross axis would be
+          // horizontal).
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              'Looks like you haven\'t entered your sleep data for today',
+              style: Theme.of(context).textTheme.headlineSmall,
+              textAlign: TextAlign.center,
+            ),
+            TextButton(
+              child: Text("Enter Data"),
+              style: ButtonStyle(
+                shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                    RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18.0),
+                        side: BorderSide(color: Colors.red))),
+              ),
+              onPressed: () {
+                NotificationService()
+                    .showNotification(title: 'Bed Time!', body: 'Get 8 full hours!');
+              },
+            ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.view_agenda_rounded),
+            label: 'Sleep Log',
+          ),
+        ],
+        currentIndex: _selectedPageIndex,
+        selectedItemColor: Colors.orange,
+        onTap: _onNavigationBarSelected,
+      ),
+    );
+  }
+}
+
+ */
+
+
+/*
+TEST BOILERPLATE CODE THAT WORKS
+
+//playground
+
+  //caffeine FireStore Test
+  var caftest = Caffeine(
+    caffeine_time: DateTime.now(),
+  );
+
+  var docRef = FirebaseFirestore.instance
+      .collection("testing_new")
+  .withConverter(
+      fromFirestore: Caffeine.fromFirestore,
+      toFirestore: (Caffeine caftest, options) => caftest.toFirestore(),
+  )
+  .doc("idk");
+  await docRef.set(caftest);
+
+
+  //Personal Model Tests
+  Personal_Model.getUserFromDB('Logan');
+
+  //!!!!!!!!!!!!!!
+
+
+  TimeOfDay wake = TimeOfDay(hour: 8,minute: 30);
+  print("You should sleep at ");
+  print(calculateAppropriateBedTime(wake, 8*60));
+  print("if you wake up at ");
+  print(wake);
+  print("and you want to sleep for 8 hours");
+
+  //playground
+
+ */
+
+/*
+//goals FireStore Test
+  var tempgoal = new Goals(8*60, TimeOfDay(hour: 8,minute: 30));
+  tempgoal.print();
+
+
+  //set reference
+  final goalref = FirebaseFirestore.instance.collection("testing_new")
+  .doc("newGoal")
+  .withConverter(
+      fromFirestore: Goals.fromFirestore,
+      toFirestore: (Goals tempgoal, _) => tempgoal.toFirestore(),
+  );
+
+  //update goal DB
+  await goalref.set(tempgoal);
+
+  print("Goal constructed from Firebase");
+  var newgoaldata = await goalref.get();
+  Goals newgoal = newgoaldata.data() as Goals;
+  newgoal.print();
+
+  //############################### usage
+
+  Goals logangoals = new Goals(5*60, TimeOfDay(hour:12,minute: 30));
+  Personal_Model new_user = new Personal_Model("Logan", logangoals);
+
+  new_user.goals.print();
+
+  Goals logannewgoals = new Goals(8*60, TimeOfDay(hour:8,minute: 30));
+  await new_user.setGoalDebug("Logan", logannewgoals);
+  new_user.goals.print();
+
+
+  await new_user.updateGoalsfromDBDebug("Logan");
+
+  new_user.goals.print();
  */
