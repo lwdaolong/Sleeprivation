@@ -55,6 +55,8 @@ class Personal_Model {
     this.today = today;
   }
 
+
+  //maybe return a tuple of the actual recommendation and a measurable loss/utility)
   TimeOfDay getRecommendedBedTime(){
     //TODO get time recommendation based on goals and recent logs
     return new TimeOfDay(hour: 6,minute: 30);
@@ -70,6 +72,36 @@ class Personal_Model {
 
   }
 
+  int timeOfDaytoInt(TimeOfDay myTime){
+    return myTime.hour*60 + myTime.minute;
+  }
+
+  int intsToTimeInt(int hours, int minutes){
+    return hours*60 + minutes;
+  }
+
+  TimeOfDay minutesToTimeOfDay(int timeInt){
+    int hours = (timeInt/60).toInt();
+    int minutes = timeInt %60;
+    return TimeOfDay(hour: hours, minute: minutes);
+  }
+
+//duration should be in the form of an int in minutes required to sleep,
+//maybe make another helper function that turns a duration in the form of hours/minutes into one singular int of minutes
+  TimeOfDay calculateAppropriateBedTime(TimeOfDay wakeup, int duration){
+    int wakeupint = timeOfDaytoInt(wakeup);
+    int bedtime = wakeupint - duration;
+
+    if(bedtime >= 0){
+      return minutesToTimeOfDay(bedtime);
+    }else{
+      int yesterday = 24*60; //e.g. midnight in minutes
+      return minutesToTimeOfDay(yesterday + bedtime);
+    }
+
+  }
+
+  //maybe return a tuple of the actual recommendation and a measurable loss/utility)
   void getCaffeineRecomendation(){
     //based on metric from @source, should not consume caffeine X hours before bedtime
     //based on usual consumption in combination with general recommendation
@@ -85,6 +117,7 @@ class Personal_Model {
     //send a notfication for a last chance
   }
 
+  //maybe return a tuple of the actual recommendation and a measurable loss/utility)
   void getActivityRecommendation(){
     //TODO
 
@@ -311,7 +344,7 @@ class Personal_Model {
   }
 
 
-  //TODO retrieve all logs, beware no error checking
+  // retrieve all logs, beware no error checking
   Future<void> retrieveAllLogsDB() async{
     //set reference
     final todayref = FirebaseFirestore.instance.collection("users")
@@ -470,5 +503,7 @@ class Personal_Model {
 
 
 }
+
+
 
 

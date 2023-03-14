@@ -87,6 +87,36 @@ class Goals {
     return Goals(data?['desired_sleep_duration'],parseTimeOfDayString(data?['desired_wake_time']));
   }
 
+  int timeOfDaytoInt(TimeOfDay myTime){
+    return myTime.hour*60 + myTime.minute;
+  }
+
+  int intsToTimeInt(int hours, int minutes){
+    return hours*60 + minutes;
+  }
+
+  TimeOfDay minutesToTimeOfDay(int timeInt){
+    int hours = (timeInt/60).toInt();
+    int minutes = timeInt %60;
+    return TimeOfDay(hour: hours, minute: minutes);
+  }
+
+  //TODO get calculated bedtime from goals
+  //duration should be in the form of an int in minutes required to sleep,
+  //maybe make another helper function that turns a duration in the form of hours/minutes into one singular int of minutes
+    TimeOfDay calculateAppropriateBedTime(){
+      int wakeupint = timeOfDaytoInt(this.desired_wake_time);
+      int bedtime = wakeupint - this.desired_sleep_duration;
+
+      if(bedtime >= 0){
+        return minutesToTimeOfDay(bedtime);
+      }else{
+        int yesterday = 24*60; //e.g. midnight in minutes
+        return minutesToTimeOfDay(yesterday + bedtime);
+      }
+
+    }
+
 }
 
 /*

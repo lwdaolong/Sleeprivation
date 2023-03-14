@@ -18,6 +18,8 @@ import 'Sleeprivation_Day.dart';
 import 'Tiredness.dart';
 import 'Sleep.dart';
 
+import 'dart:math';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -56,7 +58,7 @@ void main() async {
   //Log In User Example
   Personal_Model? new_user = await Personal_Model.loginUser("Sean");
   if(new_user != null){
-    new_user.debuglog();
+    //new_user.debuglog();
   }
 
 
@@ -91,54 +93,154 @@ void main() async {
   await new_user?.pushTodayIntoLogsDB();
   await new_user?.retrieveAllLogsDB();
   //print('log length');
-  new_user?.debuglog();
+  //new_user?.debuglog();
 
 
+  /*
+  final week_log = [
+  Sleeprivation_Day(DateTime.now(), caftest, ideal, new Tiredness(6), new Activity(1000)),
+    Sleeprivation_Day(DateTime.now(), caftest, ideal, new Tiredness(6), new Activity(1000)),
+    Sleeprivation_Day(DateTime.now(), caftest, Sleep.parse("2023-03-10 22:11:06.039", "2023-03-11 08:11:06.039", "100"), new Tiredness(5), new Activity(1000)),
+    Sleeprivation_Day(DateTime.now(), caftest, Sleep.parse("2023-03-11 23:11:06.039", "2023-03-12 08:11:06.039", "100"), new Tiredness(6), new Activity(1000)),
+    Sleeprivation_Day(DateTime.now(), caftest, Sleep.parse("2023-03-12 00:11:06.039", "2023-03-13 08:11:06.039", "100"), new Tiredness(8), new Activity(1000)),
+    Sleeprivation_Day(DateTime.now(), caftest, Sleep.parse("2023-03-13 01:11:06.039", "2023-03-14 09:11:06.039", "100"), new Tiredness(8), new Activity(1000)),
+    Sleeprivation_Day(DateTime.now(), caftest, Sleep.parse("2023-03-14 23:11:06.039", "2023-03-15 09:11:06.039", "100"), new Tiredness(10), new Activity(1000)),
+    Sleeprivation_Day(DateTime.now(), caftest, Sleep.parse("2023-03-15 01:11:06.039", "2023-03-16 08:11:06.039", "100"), new Tiredness(9), new Activity(1000)),
+    Sleeprivation_Day(DateTime.now(), caftest, Sleep.parse("2023-03-16 22:11:06.039", "2023-03-17 08:11:06.039", "100"), new Tiredness(5), new Activity(1000)),
+  ];
+   */
 
   //!!!!!!!!!!!!!!
 
+  Goals testgoal = new Goals(8*60, TimeOfDay(hour: 7,minute: 00));
 
-  TimeOfDay wake = TimeOfDay(hour: 8,minute: 30);
-  print("You should sleep at ");
-  print(calculateAppropriateBedTime(wake, 8*60));
-  print("if you wake up at ");
-  print(wake);
-  print("and you want to sleep for 8 hours");
+
+  // Define the list of sleep tuples
+  final sleep_log = [
+    Sleep.parse("2023-03-10 22:11:06.039", "2023-03-11 08:11:06.039", "0"),
+    Sleep.parse("2023-03-11 23:11:06.039", "2023-03-12 08:11:06.039", "0"),
+    Sleep.parse("2023-03-12 00:11:06.039", "2023-03-13 08:11:06.039", "0"),
+    Sleep.parse("2023-03-13 01:11:06.039", "2023-03-14 09:11:06.039", "0"),
+    Sleep.parse("2023-03-14 23:11:06.039", "2023-03-15 09:11:06.039", "0"),
+    Sleep.parse("2023-03-15 01:11:06.039", "2023-03-16 08:11:06.039", "0"),
+    Sleep.parse("2023-03-16 22:11:06.039", "2023-03-17 08:11:06.039", "0"),
+  ];
+
+
+  SleepRecommendationTuple ihopethisworks = getSleepRecommendationTuple(sleep_log, testgoal, 1);
+  print(ihopethisworks.loss);
+  print(ihopethisworks.rec_bedtime.toString());
+
+  // Find the 3 most ideal bedtimes closest to the user's sleep duration goal
+  //final idealTuples = findIdealTuples(sleepTuples, sleepDurationGoal, 3);
+
+  // Calculate the average bedtime of the 3 most ideal tuples
+  //final averageBedtime = idealTuples.map((t) => t.bedtime).reduce((a, b) => a + b) / idealTuples.length;
+
+  // Print the average bedtime
+  //print('Average bedtime of the 3 most ideal tuples: $averageBedtime:00');
+
+
 
   //playground
 
 
   runApp(const MyApp());
 }
-//TODO use in model class to convert for comparisons
-int toInt(TimeOfDay myTime){
-  return myTime.hour*60 + myTime.minute;
+
+class SleepRecommendationTuple {
+  final TimeOfDay rec_bedtime;
+  final double loss;
+
+  SleepRecommendationTuple(this.rec_bedtime,this.loss);
+
 }
 
-int toTimeInt(int hours, int minutes){
-  return hours*60 + minutes;
+
+// Finds the K-nearest neighbors of the user's inputted sleep time duration goal
+SleepRecommendationTuple getSleepRecommendationTuple(List<Sleep> sleepTuples, Goals goal, double idealweight) {
+  //just finds average of all of previous week's logs
+  //combined with a couple (k) ideal logs to nudge the recommendation
+  //so that their lifestyle change is not that different from their existing habits
+  //e.g. gradual change
+
+  //the loss/utlity is the distance between the vector created by the average recommendation
+  //and the the ideal vector
+
+  //add ideal vectors to logs to weight the average
+  Sleep ideal = Sleep.fromGoal(goal);
+  sleepTuples.add(ideal);
+  sleepTuples.add(ideal);
+
+  //for the sake of this functions, sleeptimes will be treated on a 48 hour scale
+
+
+  double bedtime_avg = 0; //in minutes on a 48 hours military time scale - could swap AM and PM but lazy
+  double duration_avg =0;
+  double quality_avg = 0;
+
+  for (final t in sleepTuples) {
+    bedtime_avg += getSpecialBedTimeMinuteRepresentation(t.getSleepStart());
+    duration_avg += t.getSleepDuration();
+    quality_avg += t.getSleepQuality();
+  }
+
+  //below three values represents a point in space, but the bedtime_avg is the actual recommendation
+  bedtime_avg = bedtime_avg/ sleepTuples.length;
+  duration_avg = duration_avg/ sleepTuples.length;
+  quality_avg = quality_avg/ sleepTuples.length;
+
+  TimeOfDay bedtime_rec = getTimeOfDayFromSpecialMinuteRepresentation(bedtime_avg.toInt());
+
+  //Calculate the loss of that recommendation
+  final distance = sqrt(pow(goal.desired_sleep_duration - duration_avg, 2) + pow(getSpecialBedTimeMinuteRepresentationfromTimeOfDay(goal.calculateAppropriateBedTime()) - bedtime_avg, 2)
+      + pow(100-quality_avg, 2));
+
+  return SleepRecommendationTuple(bedtime_rec, distance * idealweight);
 }
 
-TimeOfDay toTimeOfDay(int timeInt){
-  int hours = (timeInt/60).toInt();
-  int minutes = timeInt %60;
+int getSpecialBedTimeMinuteRepresentation(DateTime bedtime){
+  //helper function, don't use on its own
+  int bedtime_minute_representation =0;
+  bedtime_minute_representation += bedtime.minute + bedtime.hour*60;
+  if(bedtime_minute_representation < 12*60){ //maybe fenceposting?
+    bedtime_minute_representation += 24*60;
+  }
+  return bedtime_minute_representation;
+}
+
+int getSpecialBedTimeMinuteRepresentationfromTimeOfDay(TimeOfDay bedtime){
+  //helper function, don't use on its own
+  int bedtime_minute_representation =0;
+  bedtime_minute_representation += bedtime.minute + bedtime.hour*60;
+  if(bedtime_minute_representation < 12*60){ //maybe fenceposting?
+    bedtime_minute_representation += 24*60;
+  }
+  return bedtime_minute_representation;
+}
+
+TimeOfDay getTimeOfDayFromSpecialMinuteRepresentation(int minute_representation){
+  int military_time;
+
+  if(minute_representation >24*60) {
+    military_time = minute_representation-24*60;
+  }else{
+    military_time = minute_representation;
+  }
+  int hours = (military_time/60).toInt();
+  int minutes = military_time %60;
   return TimeOfDay(hour: hours, minute: minutes);
 }
 
-//duration should be in the form of an int in minutes required to sleep,
-//maybe make another helper function that turns a duration in the form of hours/minutes into one singular int of minutes
-TimeOfDay calculateAppropriateBedTime(TimeOfDay wakeup, int duration){
-  int wakeupint = toInt(wakeup);
-  int bedtime = wakeupint - duration;
-
-  if(bedtime >= 0){
-    return toTimeOfDay(bedtime);
-  }else{
-    int yesterday = 24*60; //e.g. midnight in minutes
-    return toTimeOfDay(yesterday + bedtime);
-  }
-
+DateTime getDateTimeFromTimeOfDay(TimeOfDay time_representation){
+  DateTime now = DateTime.now();
+  return new DateTime(now.year,now.month,now.day,time_representation.hour,time_representation.minute);
 }
+
+
+
+
+
 
 
 

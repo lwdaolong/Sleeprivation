@@ -4,11 +4,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:test1/Goals.dart';
 import 'firebase_options.dart';
 import 'package:intl/intl.dart';
 
 import 'dart:convert';
 import 'dart:io';
+
+import 'Goals.dart';
 
 Future<List<Map>> readJsonFile(String filePath) async {
   var input = await File(filePath).readAsString();
@@ -79,6 +83,19 @@ class Sleep {
     log("Sleep End: " + this.sleep_end.toString());
     log("Sleep Quality: " + this.sleep_quality.toString());
     log("Sleep Duration: " + this.sleep_duration.toString());
+
+  }
+
+  static Sleep fromGoal(Goals goal){
+    TimeOfDay bt = goal.calculateAppropriateBedTime();
+
+
+    //scuffed
+    DateTime now = DateTime.now();
+    DateTime bedtime = new DateTime(now.year,now.month,now.day,bt.hour,bt.minute);
+    DateTime waketime = bedtime.add(Duration(minutes : goal.desired_sleep_duration));
+
+    return new Sleep(bedtime,waketime,100);
 
   }
 
