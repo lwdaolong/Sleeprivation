@@ -16,6 +16,16 @@ import 'package:test1/Activity.dart';
 
 import 'dart:developer';
 
+import 'dart:math' hide log;
+
+
+class SleepRecommendationTuple {
+  final TimeOfDay rec_bedtime;
+  final double loss;
+
+  SleepRecommendationTuple(this.rec_bedtime,this.loss);
+
+}
 
 class Personal_Model {
   late String name;
@@ -56,21 +66,86 @@ class Personal_Model {
   }
 
 
-  //maybe return a tuple of the actual recommendation and a measurable loss/utility)
-  TimeOfDay getRecommendedBedTime(){
-    //TODO get time recommendation based on goals and recent logs
-    return new TimeOfDay(hour: 6,minute: 30);
-    //find calculation of bed time, ideally from recent logs
-    //use the returned time to schedule a notification
+  // Finds the K-nearest neighbors of the user's inputted sleep time duration goal
+  SleepRecommendationTuple getSleepRecommendationTuple(List<Sleep> sleepTuples, Goals goal, double idealweight) {
+    //just finds average of all of previous week's logs
+    //combined with a couple (k) ideal logs to nudge the recommendation
+    //so that their lifestyle change is not that different from their existing habits
+    //e.g. gradual change
 
-    //subtract wake time by desired_duration
-    //if output is positive, return,
-    //if positive is negative, add the negative to 24 (12 AM midnight) to get a positive number
-    //this probably breaks if your desired sleep time is more than 24 hours, make goal so it is not negative or more than 24 hours
+    //the loss/utlity is the distance between the vector created by the average recommendation
+    //and the the ideal vector
 
-    //default behaviour, should implement differntly based on most recent sleep times or log list length
+    //add ideal vectors to logs to weight the average
+    Sleep ideal = Sleep.fromGoal(goal);
+    sleepTuples.add(ideal);
+    sleepTuples.add(ideal);
 
+    //for the sake of this functions, sleeptimes will be treated on a 48 hour scale
+
+
+    double bedtime_avg = 0; //in minutes on a 48 hours military time scale - could swap AM and PM but lazy
+    double duration_avg =0;
+    double quality_avg = 0;
+
+    for (final t in sleepTuples) {
+      bedtime_avg += getSpecialBedTimeMinuteRepresentation(t.getSleepStart());
+      duration_avg += t.getSleepDuration();
+      quality_avg += t.getSleepQuality();
+    }
+
+    //below three values represents a point in space, but the bedtime_avg is the actual recommendation
+    bedtime_avg = bedtime_avg/ sleepTuples.length;
+    duration_avg = duration_avg/ sleepTuples.length;
+    quality_avg = quality_avg/ sleepTuples.length;
+
+    TimeOfDay bedtime_rec = getTimeOfDayFromSpecialMinuteRepresentation(bedtime_avg.toInt());
+
+    //Calculate the loss of that recommendation
+    final distance = sqrt(pow(goal.desired_sleep_duration - duration_avg, 2) + pow(getSpecialBedTimeMinuteRepresentationfromTimeOfDay(goal.calculateAppropriateBedTime()) - bedtime_avg, 2)
+        + pow(100-quality_avg, 2));
+
+    return SleepRecommendationTuple(bedtime_rec, distance * idealweight);
   }
+
+  int getSpecialBedTimeMinuteRepresentation(DateTime bedtime){
+    //helper function, don't use on its own
+    int bedtime_minute_representation =0;
+    bedtime_minute_representation += bedtime.minute + bedtime.hour*60;
+    if(bedtime_minute_representation < 12*60){ //maybe fenceposting?
+      bedtime_minute_representation += 24*60;
+    }
+    return bedtime_minute_representation;
+  }
+
+  int getSpecialBedTimeMinuteRepresentationfromTimeOfDay(TimeOfDay bedtime){
+    //helper function, don't use on its own
+    int bedtime_minute_representation =0;
+    bedtime_minute_representation += bedtime.minute + bedtime.hour*60;
+    if(bedtime_minute_representation < 12*60){ //maybe fenceposting?
+      bedtime_minute_representation += 24*60;
+    }
+    return bedtime_minute_representation;
+  }
+
+  TimeOfDay getTimeOfDayFromSpecialMinuteRepresentation(int minute_representation){
+    int military_time;
+
+    if(minute_representation >24*60) {
+      military_time = minute_representation-24*60;
+    }else{
+      military_time = minute_representation;
+    }
+    int hours = (military_time/60).toInt();
+    int minutes = military_time %60;
+    return TimeOfDay(hour: hours, minute: minutes);
+  }
+
+  DateTime getDateTimeFromTimeOfDay(TimeOfDay time_representation){
+    DateTime now = DateTime.now();
+    return new DateTime(now.year,now.month,now.day,time_representation.hour,time_representation.minute);
+  }
+
 
   int timeOfDaytoInt(TimeOfDay myTime){
     return myTime.hour*60 + myTime.minute;
