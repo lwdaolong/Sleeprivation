@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -39,7 +41,7 @@ class Tiredness {
   }
 
   void print(){
-    debugPrint("Tiredscore: " + this.tired_score.toString());
+    log("Tiredscore: " + this.tired_score.toString());
   }
 
 

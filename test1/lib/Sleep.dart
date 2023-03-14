@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -73,10 +75,10 @@ class Sleep {
   }
 
   void printSleepDetails(){
-    debugPrint("Sleep Start: " + this.sleep_start.toString());
-    debugPrint("Sleep End: " + this.sleep_end.toString());
-    debugPrint("Sleep Quality: " + this.sleep_quality.toString());
-    debugPrint("Sleep Duration: " + this.sleep_duration.toString());
+    log("Sleep Start: " + this.sleep_start.toString());
+    log("Sleep End: " + this.sleep_end.toString());
+    log("Sleep Quality: " + this.sleep_quality.toString());
+    log("Sleep Duration: " + this.sleep_duration.toString());
 
   }
 

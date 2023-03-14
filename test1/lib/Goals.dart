@@ -46,8 +46,8 @@ class Goals {
   }
 
   void print(){
-    debugPrint(this.desired_sleep_duration.toString());
-    debugPrint(this.desired_wake_time.toString());
+    log(this.desired_sleep_duration.toString());
+    log(this.desired_wake_time.toString());
   }
 
   TimeOfDay parseTimeOfDayString(String time_str_rep){

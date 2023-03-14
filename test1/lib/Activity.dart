@@ -40,7 +40,7 @@ class Activity {
 
 
   void print(){
-    debugPrint(this.steps.toString());
+    log(this.steps.toString());
   }
 
 

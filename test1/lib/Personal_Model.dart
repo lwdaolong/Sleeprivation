@@ -1,8 +1,11 @@
 
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:intl/intl.dart';
 import 'firebase_options.dart';
 import 'package:test1/Sleeprivation_Day.dart';
 import 'package:test1/Goals.dart';
@@ -25,6 +28,7 @@ class Personal_Model {
     this.logs = []; //ever evolving list of daily logs (Sleeprivation Day)
     this.goals = goals; //established when personal profile is created
     this.today = Sleeprivation_Day.getNewEmptyDay();
+    //saveUserDetailsDB();
   }
 
   List getLogs(){
@@ -119,6 +123,9 @@ class Personal_Model {
   }
 
   static void getUserFromDB(String username){
+    //THIS SHOULD NOT BE USED FOR ANYTHING BESIDES DEBUGGING
+    //JUST QUERIES AND PRINTS DATA ABOUT A USER BY USERNAME
+    //CRASHES WHEN USER DOES NOT EXIST
     final goal_ref = FirebaseFirestore.instance.collection('users').doc(username).collection('Goals');
 
     final goal_query = goal_ref.get().then(
@@ -248,7 +255,7 @@ class Personal_Model {
   }
 
   Future<void> setTodayDB( Sleeprivation_Day newday) async{
-
+    //setes today in memory and database
     //set reference
     final todayref = FirebaseFirestore.instance.collection("users")
         .doc(this.name)
@@ -263,6 +270,27 @@ class Personal_Model {
     await todayref.set(newday);
 
     this.today = newday;
+  }
+
+  Future<void> setSleeprivationDayinLogsDB( Sleeprivation_Day newday) async{
+    //updates a given user's 'logged' day into the 'day logs' collection in database
+    //used as helper function in a for loop to load all logged days into database
+    //okay to use to overwrite logs
+    final DateFormat formatter = DateFormat('yyyy-MM-dd');
+    final String formatted_date = formatter.format(newday.date as DateTime); //ensures entries are just date, time not included
+
+    //set reference
+    final todayref = FirebaseFirestore.instance.collection("users")
+        .doc(this.name)
+        .collection("Day_Logs")
+        .doc(formatted_date)
+        .withConverter(
+      fromFirestore: Sleeprivation_Day.fromFirestore,
+      toFirestore: (Sleeprivation_Day tempday, _) => tempday.toFirestore(),
+    );
+
+    //update DB
+    await todayref.set(newday);
   }
 
   Future<void> updateTodayFromDB() async{
@@ -283,7 +311,7 @@ class Personal_Model {
   }
 
 
-  //TODO retrieve all logs
+  //TODO retrieve all logs, beware no error checking
   Future<void> retrieveAllLogsDB() async{
     //set reference
     final todayref = FirebaseFirestore.instance.collection("users")
@@ -306,14 +334,18 @@ class Personal_Model {
   }
 
 
-  //TODO push current day into logs and into DB
+
   Future<void> pushTodayIntoLogsDB() async{
+    //push current day into logs array and into DB logs array
+
+    final DateFormat formatter = DateFormat('yyyy-MM-dd');
+    final String formatted_date = formatter.format(this.today.date as DateTime); //ensures entries are just date, time not included
 
     //set reference
     final todayref = FirebaseFirestore.instance.collection("users")
         .doc(this.name)
         .collection("Day_Logs")
-        .doc(this.today.date.toString())
+        .doc(formatted_date)
         .withConverter(
       fromFirestore: Sleeprivation_Day.fromFirestore,
       toFirestore: (Sleeprivation_Day tempday, _) => tempday.toFirestore(),
@@ -332,27 +364,109 @@ class Personal_Model {
   //potentially set all logs? could be dangerous but useful for debugging
 
 
-
-  //TODO create new User with Goals
-  Future<void> createNewUserDB() async{
-    //create intiial user collection based on username
+  static Future<bool> checkForUser(String username) async{
+    //use this at login
+    //if return false, use the normal constructor PersonalModel()
+    //if return true, user already exists, use instantiateUserFromDB
+    var usersRef = FirebaseFirestore.instance.collection('users').doc(username);
+    var usersnapshot = await usersRef.get();
+    if(usersnapshot.exists){
+      return true;
+    }
+    return false;
   }
 
-  //TODO push user data into DB
+
   Future<void> saveUserDetailsDB() async{
+    //push ALL user data into DB
     //probably rarely needed, but save entire Personal model to DB
     //would rather call saves on specific attributes when needed
     //expensive to save model
+
+    final data = {"exists": true};
+
+    FirebaseFirestore.instance
+        .collection("users")
+        .doc(this.name)
+        .set(data, SetOptions(merge:true))
+        .onError((e, _) => print("Error writing document: $e"));
+
+
+    //save goals
+    setGoal(this.goals);
+    //save today
+    setTodayDB(this.today);
+    //for each log in logs, save log
+    for (var day in this.logs) {
+      //loads each given day within 'logs' to database one at a time
+      setSleeprivationDayinLogsDB(day);
+    }
+
   }
 
-  //TODO instantiate user from DB
-  Future<void> instantiateUserFromDB() async{
-    //looks for collection of this.name
-    //instantiates attributes based on collection in DB
+
+  void debuglog(){
+    log(this.name);
+    this.goals.print();
+    log("Current Day:");
+    this.today.debuglog();
+    for (var value in this.logs) {
+      //print details for each day in a users loaded logs
+      log("New Day:");
+      value.debuglog();
+    }
+
+
   }
 
 
 
+  //ONLY CALL THIS METHOD ONCE THE USER IS KNOWN TO BE IN THE DATABASE
+  //WILL CRASH IF USER IS NOT IN DATABASE
+  static Future<Personal_Model> loadUserFromDB(String username) async{
+    Goals tempgoals = new Goals(8*60, TimeOfDay(hour:8,minute: 30));
+    Personal_Model temp = Personal_Model(username, tempgoals);
+    //manually update personal model with methods
+
+    //load goals
+    await temp.updateGoalsfromDB();
+
+    //load Today
+    await temp.updateTodayFromDB();
+
+    //load Logs
+    await temp.retrieveAllLogsDB();
+
+    //save and return
+    return temp;
+
+  }
+
+  //use this method to log user in
+  static Future<Personal_Model?> loginUser(String username) async{
+    if(await Personal_Model.checkForUser(username)){
+      return await Personal_Model.loadUserFromDB(username);
+    }else{
+      log("User Does Not Exist");
+      return null;
+    }
+
+
+  }
+
+  static Future<Personal_Model?> createNewUser(String username, Goals goals) async{
+    //creates a new user and returns an object instance
+    //also saves new user profile to database
+    //ONLY CALL THIS IF USERNAME IS NOT ALREADY IN APP
+    //WILL OVERWRITE EXISTING USER IF USED CALLOUSLY
+
+    if(await Personal_Model.checkForUser(username) == false){
+      Personal_Model newuser = new Personal_Model(username, goals);
+      newuser.saveUserDetailsDB();
+      return newuser;
+    }
+    return null;
+  }
 
 
 }

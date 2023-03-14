@@ -29,7 +29,8 @@ class Caffeine {
   void print(String s){
     final DateFormat formatter = DateFormat('yyyy-MM-dd');
     final String formatted = formatter.format(this.caffeine_time as DateTime);
-    debugPrint(formatted);
+    //log(formatted);
+    log(this.caffeine_time.toString());
   }
 
   void addCaffeineToDB(){ //used for debugging ONLY
@@ -60,8 +61,6 @@ class Caffeine {
 
   }
 
-  //TODO get caffeien by date
-  //TODO get caffeine by last week
 
   //used for debugging ONLY
   void getAllCaffeine(){ //doc_id format should be in form of "yyyy-MM-dd"

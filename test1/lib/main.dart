@@ -1,4 +1,6 @@
 
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -46,51 +48,52 @@ void main() async {
   });
 
   //playground
+    var caftest = Caffeine(
+      caffeine_time: DateTime.now(),
+    );
+
+
+  //Log In User Example
+  Personal_Model? new_user = await Personal_Model.loginUser("Sean");
+  if(new_user != null){
+    new_user.debuglog();
+  }
+
+
+  /*
+  //Create User Example
+
+  Goals exampleGoals = new Goals(8*60, TimeOfDay(hour:8,minute: 0));
+  Personal_Model? new_user = await Personal_Model.createNewUser("Sean", exampleGoals);
+  if(new_user != null){
+    new_user.debuglog();
+  }
+  */
 
 
 
 
-  
 
 
 
 
-  //caffeine FireStore Test
-  var caftest = Caffeine(
-    caffeine_time: DateTime.now(),
-  );
-  
-  var docRef = FirebaseFirestore.instance
-      .collection("testing_new")
-  .withConverter(
-      fromFirestore: Caffeine.fromFirestore,
-      toFirestore: (Caffeine caftest, options) => caftest.toFirestore(),
-  )
-  .doc("idk");
-  await docRef.set(caftest);
-  
-
-  //Personal Model Tests
-  //Personal_Model.getUserFromDB('Logan');
-  Goals logangoals = new Goals(5*60, TimeOfDay(hour:12,minute: 30));
-  Personal_Model new_user = new Personal_Model("Logan", logangoals);
 
 
   Sleep testsleep = Sleep.parse("2023-03-09 14:11:06.039", "2023-03-13 14:11:06.039", "60");
 
-  Sleeprivation_Day testday = new Sleeprivation_Day(DateTime.parse("2023-03-09 22:16:40.805"), caftest, testsleep, Tiredness(5), Activity(4500));
-  await new_user.setTodayDB(testday);
+  Sleeprivation_Day testday = new Sleeprivation_Day(DateTime.parse("2023-03-09 22:16:40.805"), caftest, testsleep, Tiredness(7), Activity(9250));
 
-  new_user.today.debuglog();
-  //await new_user.updateTodayFromDB();
-  //print('Newly updated day based on DB');
-  //new_user.today.debuglog();
+  new_user?.today = testday;
+
+  //new_user.debuglog();
 
 
-  new_user.pushTodayIntoLogsDB();
-  await new_user.retrieveAllLogsDB();
-  print('log length');
-  print(new_user.logs.length);
+  await new_user?.pushTodayIntoLogsDB();
+  await new_user?.retrieveAllLogsDB();
+  //print('log length');
+  new_user?.debuglog();
+
+
 
   //!!!!!!!!!!!!!!
 

@@ -115,10 +115,24 @@ class Sleeprivation_Day {
 
 
     DateTime date_instance = (data?['date'].toDate());
-    Caffeine caffeine_instance = new Caffeine(caffeine_time: data?['caffeine'].toDate());
-    Sleep sleep_instance = new Sleep(data?['sleep_start'].toDate(), data?['sleep_end'].toDate(),data?['sleep_quality']);
-    Tiredness tiredness_instance = new Tiredness(data?['tiredness']);
-    Activity activity_instance = new Activity(data?['activity']);
+
+    Caffeine? caffeine_instance = null;
+    Sleep? sleep_instance = null;
+    Tiredness? tiredness_instance = null;
+    Activity? activity_instance = null;
+
+    if(data?['caffeine'] != null){
+      caffeine_instance = new Caffeine(caffeine_time: data?['caffeine'].toDate());
+    }
+    if( data?['sleep_start']!= null){
+      sleep_instance = new Sleep(data?['sleep_start'].toDate(), data?['sleep_end'].toDate(),data?['sleep_quality']);
+    }
+    if( data?['tiredness']!= null){
+      tiredness_instance = new Tiredness(data?['tiredness']);
+    }
+    if( data?['activity']!= null){
+      activity_instance = new Activity(data?['activity']);
+    }
 
     return Sleeprivation_Day(date_instance,caffeine_instance,sleep_instance,tiredness_instance,activity_instance);
   }
