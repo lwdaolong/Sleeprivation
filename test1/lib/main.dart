@@ -1,8 +1,13 @@
-
 import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:overlay_support/overlay_support.dart';
+import 'package:test1/login.dart';
+import 'hometab.dart';
+import 'logtab.dart';
+import 'login.dart';
+import 'globals.dart' as globals;
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -20,146 +25,12 @@ import 'Sleep.dart';
 
 import 'dart:math';
 
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   NotificationService().initNotification();
   await Firebase.initializeApp();
-
-  FirebaseMessaging messaging = FirebaseMessaging.instance;
-
-  NotificationSettings settings = await messaging.requestPermission(
-    alert: true,
-    announcement: false,
-    badge: true,
-    carPlay: false,
-    criticalAlert: false,
-    provisional: false,
-    sound: true,
-  );
-
-  print('User granted permission: ${settings.authorizationStatus}');
-
-  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-    print('Got a message whilst in the foreground!');
-    print('Message data: ${message.data}');
-
-    if (message.notification != null) {
-      print('Message also contained a notification: ${message.notification}');
-    }
-  });
-
-  //playground
-    var caftest = Caffeine(
-      caffeine_time: DateTime.now(),
-    );
-
-
-  //Log In User Example
-  Personal_Model? new_user = await Personal_Model.loginUser("Sean");
-  if(new_user != null){
-    //new_user.debuglog();
-  }
-
-
-  /*
-  //Create User Example
-
-  Goals exampleGoals = new Goals(8*60, TimeOfDay(hour:8,minute: 0));
-  Personal_Model? new_user = await Personal_Model.createNewUser("Sean", exampleGoals);
-  if(new_user != null){
-    new_user.debuglog();
-  }
-  */
-
-
-
-
-
-
-
-
-
-
-  Sleep testsleep = Sleep.parse("2023-03-09 14:11:06.039", "2023-03-13 14:11:06.039", "60");
-
-  Sleeprivation_Day testday = new Sleeprivation_Day(DateTime.parse("2023-03-09 22:16:40.805"), caftest, testsleep, Tiredness(7), Activity(9250));
-
-  new_user?.today = testday;
-
-  //new_user.debuglog();
-
-
-  await new_user?.pushTodayIntoLogsDB();
-  await new_user?.retrieveAllLogsDB();
-  //print('log length');
-  //new_user?.debuglog();
-
-
-  /*
-  final week_log = [
-  Sleeprivation_Day(DateTime.now(), caftest, ideal, new Tiredness(6), new Activity(1000)),
-    Sleeprivation_Day(DateTime.now(), caftest, ideal, new Tiredness(6), new Activity(1000)),
-    Sleeprivation_Day(DateTime.now(), caftest, Sleep.parse("2023-03-10 22:11:06.039", "2023-03-11 08:11:06.039", "100"), new Tiredness(5), new Activity(1000)),
-    Sleeprivation_Day(DateTime.now(), caftest, Sleep.parse("2023-03-11 23:11:06.039", "2023-03-12 08:11:06.039", "100"), new Tiredness(6), new Activity(1000)),
-    Sleeprivation_Day(DateTime.now(), caftest, Sleep.parse("2023-03-12 00:11:06.039", "2023-03-13 08:11:06.039", "100"), new Tiredness(8), new Activity(1000)),
-    Sleeprivation_Day(DateTime.now(), caftest, Sleep.parse("2023-03-13 01:11:06.039", "2023-03-14 09:11:06.039", "100"), new Tiredness(8), new Activity(1000)),
-    Sleeprivation_Day(DateTime.now(), caftest, Sleep.parse("2023-03-14 23:11:06.039", "2023-03-15 09:11:06.039", "100"), new Tiredness(10), new Activity(1000)),
-    Sleeprivation_Day(DateTime.now(), caftest, Sleep.parse("2023-03-15 01:11:06.039", "2023-03-16 08:11:06.039", "100"), new Tiredness(9), new Activity(1000)),
-    Sleeprivation_Day(DateTime.now(), caftest, Sleep.parse("2023-03-16 22:11:06.039", "2023-03-17 08:11:06.039", "100"), new Tiredness(5), new Activity(1000)),
-  ];
-   */
-
-  //!!!!!!!!!!!!!!
-
-  Goals testgoal = new Goals(8*60, TimeOfDay(hour: 7,minute: 00));
-
-
-  // Define the list of sleep tuples
-  final sleep_log = [
-    Sleep.parse("2023-03-10 22:11:06.039", "2023-03-11 08:11:06.039", "0"),
-    Sleep.parse("2023-03-11 23:11:06.039", "2023-03-12 08:11:06.039", "0"),
-    Sleep.parse("2023-03-12 00:11:06.039", "2023-03-13 08:11:06.039", "0"),
-    Sleep.parse("2023-03-13 01:11:06.039", "2023-03-14 09:11:06.039", "0"),
-    Sleep.parse("2023-03-14 23:11:06.039", "2023-03-15 09:11:06.039", "0"),
-    Sleep.parse("2023-03-15 01:11:06.039", "2023-03-16 08:11:06.039", "0"),
-    Sleep.parse("2023-03-16 22:11:06.039", "2023-03-17 08:11:06.039", "0"),
-  ];
-
-
-  //SleepRecommendationTuple ihopethisworks = getSleepRecommendationTuple(sleep_log, testgoal, 1);
-  //print(ihopethisworks.loss);
-  //print(ihopethisworks.rec_bedtime.toString());
-
-  // Find the 3 most ideal bedtimes closest to the user's sleep duration goal
-  //final idealTuples = findIdealTuples(sleepTuples, sleepDurationGoal, 3);
-
-  // Calculate the average bedtime of the 3 most ideal tuples
-  //final averageBedtime = idealTuples.map((t) => t.bedtime).reduce((a, b) => a + b) / idealTuples.length;
-
-  // Print the average bedtime
-  //print('Average bedtime of the 3 most ideal tuples: $averageBedtime:00');
-
-
-
-  //playground
-
-
   runApp(const MyApp());
 }
-
-
-
-
-
-
-
-
-
-
-
-
-//AAAHHAHAHHAHAHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH PLAYGROUND^^ TODO MOVE EVERYTHING ABOVE INTO OTHER MODULES
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -168,52 +39,54 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Sleeprivation',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.red,
-      ),
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Firebase'),
+    return OverlaySupport(
+      child: MaterialApp(
+        title: 'Sleeprivation',
+        routes: {
+          '/': (context) => Landing(),
+          '/login': (context) => LoginForm(title: 'Sleeprivation'),
+          '/home': (context) => MyHomePage(title: 'Sleeprivation')
+        },
+        theme: ThemeData(
+          primarySwatch: Colors.red,
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed:  ()=> FirebaseFirestore.instance
-              .collection('testing')
-              .add({'timestamp': Timestamp.fromDate(DateTime.now())}),
-          child:Icon(Icons.add),
-        ),
-        body: StreamBuilder(
-          stream: FirebaseFirestore.instance.collection('testing').snapshots(),
-          builder: (
-              BuildContext context,
-              AsyncSnapshot<QuerySnapshot> snapshot,
-              ){
-            if (!snapshot.hasData) return const SizedBox.shrink();
-            return ListView.builder(
-              itemCount: snapshot.data?.docs.length,
-              itemBuilder: (BuildContext context, int index){
-                final docData = snapshot.data?.docs[index];
-                final dateTime = (docData!['timestamp'] as Timestamp).toDate();
-                return ListTile(
-                  title: Text(dateTime.toString()),
-                );
-              },
-
-            );
-          },
-        ),
+        // home: const MyHomePage(title: 'Sleeprivation'),
       ),
     );
+  }
+}
+
+class Landing extends StatefulWidget {
+  @override
+  _LandingState createState() => _LandingState();
+}
+
+class _LandingState extends State<Landing> {
+  @override
+  void initState() {
+    super.initState();
+    _loadUserInfo();
+  }
+
+  _loadUserInfo() async {
+    // SharedPreferences prefs = await SharedPreferences.getInstance();
+    String username = "";
+    if (username == "") {
+      Future.delayed(Duration.zero, () {
+        Navigator.of(context)
+            .pushNamedAndRemoveUntil('/login', ModalRoute.withName('/login'));
+      });
+    } else {
+      Future.delayed(Duration.zero, () {
+        Navigator.of(context)
+            .pushNamedAndRemoveUntil('/home', ModalRoute.withName('/home'));
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(body: Center(child: Text("Loading")));
   }
 }
 
@@ -237,6 +110,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _selectedPageIndex = 0;
+  List<Widget> _tabOptions = <Widget>[HomeTab(), LogTab()];
 
   void _onNavigationBarSelected(int index) {
     setState(() {
@@ -251,59 +125,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'Looks like you haven\'t entered your sleep data for today',
-              style: Theme.of(context).textTheme.headlineSmall,
-              textAlign: TextAlign.center,
-            ),
-            TextButton(
-              child: Text("Enter Data"),
-              style: ButtonStyle(
-                shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(18.0),
-                        side: BorderSide(color: Colors.red))),
-              ),
-              onPressed: () {
-                NotificationService()
-                    .showNotification(title: 'Bed Time!', body: 'Get 8 full hours!');
-              },
-            ),
-          ],
-        ),
-      ),
+      body: Container(child: _tabOptions.elementAt(_selectedPageIndex)),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
@@ -316,7 +142,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ],
         currentIndex: _selectedPageIndex,
-        selectedItemColor: Colors.orange,
+        selectedItemColor: Colors.red,
         onTap: _onNavigationBarSelected,
       ),
     );
