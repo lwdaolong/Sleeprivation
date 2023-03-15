@@ -26,8 +26,6 @@ import 'Sleep.dart';
 import 'dart:math';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  NotificationService().initNotification();
   await Firebase.initializeApp();
   runApp(const MyApp());
 }
