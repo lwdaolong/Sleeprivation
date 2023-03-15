@@ -21,6 +21,7 @@ import 'Sleep.dart';
 import 'dart:math';
 
 
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   NotificationService().initNotification();
@@ -81,52 +82,55 @@ void main() async {
 
    */
 
-
-
-
   //Sleep testsleep = Sleep.parse("2023-03-09 14:11:06.039", "2023-03-13 14:11:06.039", "60");
   //Sleeprivation_Day testday = new Sleeprivation_Day(DateTime.parse("2023-03-09 22:16:40.805"), caftest, testsleep, Tiredness(7), Activity(9250));
   //new_user?.today = testday;
-
   //new_user.debuglog();
-
 
   /*
   //Caffeine Recommendation Example
   Goals exampleGoals = new Goals(8*60, TimeOfDay(hour:8,minute: 0));
-
   CaffeineRecommendationTuple? cafrec = new_user?.getCaffeineRecommendationTuple(1);
   print(cafrec?.loss);
   print(cafrec?.rec_caffeine.toString());
-
    */
-
 
   List<Recommendation>? temprecs = new_user?.getRankedRecommendations();
   for(final rec in temprecs!){
     rec.debuglog();
   }
 
+  increaseStepCountWhileAppRunning(new_user!);
 
-
+  await Future.delayed(Duration(seconds: 20));
+  await new_user.saveUserDetailsDB();
 
   //!!!!!!!!!!!!!!
   //playground
   runApp(const MyApp());
 }
 
-int getSpecialBedTimeMinuteRepresentation(DateTime bedtime){
-  //helper function, don't use on its own
-  int bedtime_minute_representation =0;
-  bedtime_minute_representation += bedtime.minute + bedtime.hour*60;
-  if(bedtime_minute_representation < 12*60){ //maybe fenceposting?
-    bedtime_minute_representation += 24*60;
+Future<void> increaseStepCountWhileAppRunning(Personal_Model user) async {
+  if(user.getToday().getActivity() == null){
+    user.getToday().setActivity( Activity(0));
   }
-  return bedtime_minute_representation;
+
+  int? stepCountTemp = user.getToday().getActivity()?.steps;
+  int stepCount =0;
+  if(stepCountTemp != null){
+    stepCount = stepCountTemp;
+  }
+  Random random = new Random();
+
+  while (true) {
+    int intervalSeconds = random.nextInt(10) + 1; // Random interval between 1 and 5 seconds
+    await Future.delayed(Duration(seconds: intervalSeconds)); // Wait for random interval
+    int stepIncrease = random.nextInt(50) + 1; // Random step increase between 1 and 50
+    stepCount += stepIncrease;
+    user.getToday().getActivity()?.setSteps(stepCount);
+    //print('Step count: $stepCount');
+  }
 }
-
-
-
 
 
 

@@ -108,7 +108,7 @@ class Personal_Model {
     List<Recommendation> unordered_recs = [
       getSleepRecommendationTuple(1),
       getCaffeineRecommendationTuple(1),
-      new StepReccomendationTuple(20,90) //TODO put proper thing
+      getActivityRecommendation(30)
     ];
 
     Map map= {0:unordered_recs[0].loss, 1:unordered_recs[1].loss, 2:unordered_recs[2].loss };
@@ -198,6 +198,23 @@ class Personal_Model {
     //helper function, don't use on its own
     int bedtime_minute_representation =0;
     bedtime_minute_representation += (bedtime2.minute + bedtime2.hour*60)!;
+    return bedtime_minute_representation;
+  }
+
+  int getSpecialBedTimeMinuteRepresentation3(DateTime? bedtime){
+    DateTime bedtime2;
+    if(bedtime == null){
+      bedtime2 = DateTime.now();
+    }else{
+      bedtime2 = bedtime;
+    }
+
+    //helper function, don't use on its own
+    int bedtime_minute_representation =0;
+    bedtime_minute_representation += (bedtime2.minute + bedtime2.hour*60)!;
+    if(bedtime_minute_representation < 12*60){ //maybe fenceposting?
+      bedtime_minute_representation += 24*60;
+    }
     return bedtime_minute_representation;
   }
 
@@ -302,7 +319,13 @@ class Personal_Model {
     TimeOfDay caftime_rec = getTimeOfDayFromSpecialMinuteRepresentation(caftime_avg.toInt());
 
     //Calculate the loss of that recommendation
-    final distance = (getSpecialBedTimeMinuteRepresentation2(finalcaftime.getCaffeineTime()) - caftime_avg).abs();
+    var distance =0.0;
+    var finalcaftimeminuterep = getSpecialBedTimeMinuteRepresentation3(finalcaftime.getCaffeineTime());
+
+
+    if(caftime_avg > finalcaftimeminuterep){
+      distance = (finalcaftimeminuterep - caftime_avg).abs();
+    }
 
     return CaffeineRecommendationTuple(caftime_rec, distance * idealweight);
 
@@ -320,10 +343,35 @@ class Personal_Model {
 
 
   //maybe return a tuple of the actual recommendation and a measurable loss/utility)
-  void getActivityRecommendation(){
-    //TODO
+  StepReccomendationTuple getActivityRecommendation(double idealweight){
 
+    List<Activity> actlist = getActivityListFromLogs();
+
+    const int idealsteps = 5000;
+    Activity ideal_activity = Activity(idealsteps);
+
+    actlist.add(ideal_activity);
+
+    double step_avg =0;
+
+    for (final t in actlist){
+      step_avg +=t.getSteps();
+    }
+
+    step_avg = step_avg/actlist.length;
+
+    if(step_avg < idealsteps){
+      //if you are NOT getting enough steps per day
+      //weigh the distance invertly from avg steps to
+      double distance = idealsteps/(1+step_avg);
+
+      //double distance = (step_avg- idealsteps).abs();
+      return new StepReccomendationTuple(step_avg.toInt(), distance*idealweight);
+    }//else (if you are getting enough steps per day, 0 loss)
+    return new StepReccomendationTuple(step_avg.toInt(), 0);
     //send notification near workout times
+    //Research shows 30 minuts of activity per day
+    //and at least 5,000 steps a day leads to healthy lifestyle
     //remind them that activity helps sleep
   }
 
@@ -610,7 +658,7 @@ class Personal_Model {
 
   }
 
-  // get a list of JUST sleep objects from logs
+  // get a list of JUST Caffeine objects from logs
   List<Caffeine> getCaffeineListFromLogs(){
     List<Caffeine> caflist= [];
     for (final t in this.logs){
@@ -620,6 +668,22 @@ class Personal_Model {
 
     return caflist;
 
+  }
+
+  // get a list of JUST Activity objects from logs
+  List<Activity> getActivityListFromLogs(){
+    List<Activity> actlist= [];
+    for (final t in this.logs){
+      Activity tempact;
+      var returnedAct = t.getActivity();
+      if(returnedAct == null){
+        tempact = new Activity(0);
+      }else{
+        tempact = returnedAct;
+      }
+      actlist.add(tempact);
+    }
+    return actlist;
   }
 
 
