@@ -21,6 +21,24 @@ class MyLoginForm extends State<LoginForm> {
   // Note: This is a `GlobalKey<FormState>`,
   // not a GlobalKey<MyCustomFormState>.
   final _formKey = GlobalKey<FormState>();
+  String? _username;
+
+  void _handleSubmitted() async {
+    final FormState form = _formKey.currentState!;
+    if (!form.validate()) {
+    } else {
+      form.save();
+      print(_username);
+      Navigator.of(context)
+          .pushNamedAndRemoveUntil('/home', ModalRoute.withName('/home'));
+      // if (_password == "password") {
+      //   SharedPreferences prefs = await SharedPreferences.getInstance();
+      //   prefs.setString("username", _email);
+      //   Navigator.pushNamedAndRemoveUntil(
+      //       context, '/home', ModalRoute.withName('/home'));
+      // }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,6 +70,9 @@ class MyLoginForm extends State<LoginForm> {
                       border: OutlineInputBorder(),
                       hintText: 'Username',
                     ),
+                    onSaved: (String? value) {
+                      _username = value;
+                    },
                   ),
                 ),
                 OutlinedButton(
@@ -60,12 +81,13 @@ class MyLoginForm extends State<LoginForm> {
                           borderRadius: BorderRadius.circular(18.0),
                         ),
                         side: BorderSide(width: 1, color: Colors.black)),
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        Navigator.of(context).pushNamedAndRemoveUntil(
-                            '/home', ModalRoute.withName('/home'));
-                      }
-                    },
+                    // onPressed: () {
+                    //   if (_formKey.currentState!.validate()) {
+                    //     Navigator.of(context).pushNamedAndRemoveUntil(
+                    //         '/home', ModalRoute.withName('/home'));
+                    //   }
+                    // },
+                    onPressed: _handleSubmitted,
                     child: Text("Login",
                         style: Theme.of(context).textTheme.titleMedium))
               ],
