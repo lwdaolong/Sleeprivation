@@ -66,8 +66,15 @@ class Personal_Model {
   }
 
 
+  //ENSURE USER IS LOADED/ logged in before this is called
   // Finds the K-nearest neighbors of the user's inputted sleep time duration goal
-  SleepRecommendationTuple getSleepRecommendationTuple(List<Sleep> sleepTuples, Goals goal, double idealweight) {
+  SleepRecommendationTuple getSleepRecommendationTuple( double idealweight) {
+    //if user is not logged in(debugging purposes, uncomment next line)
+    //await retrieveLastWeekLogs();
+
+
+    List<Sleep> sleepTuples = getSleepListFromLogs();
+    Goals goal = this.goals;
     //just finds average of all of previous week's logs
     //combined with a couple (k) ideal logs to nudge the recommendation
     //so that their lifestyle change is not that different from their existing habits
@@ -164,6 +171,7 @@ class Personal_Model {
 //duration should be in the form of an int in minutes required to sleep,
 //maybe make another helper function that turns a duration in the form of hours/minutes into one singular int of minutes
   TimeOfDay calculateAppropriateBedTime(TimeOfDay wakeup, int duration){
+    //DO NOT USE THIS, JUST HELPER METHOD
     int wakeupint = timeOfDaytoInt(wakeup);
     int bedtime = wakeupint - duration;
 
@@ -441,6 +449,48 @@ class Personal_Model {
 
   }
 
+  //just do like all logs, but limit to 7 and add/don't add to logs based on query
+  Future<void> retrieveLastWeekLogs() async{
+    //set reference
+    final todayref = FirebaseFirestore.instance.collection("users")
+        .doc(this.name)
+        .collection("Day_Logs")
+        .withConverter(
+      fromFirestore: Sleeprivation_Day.fromFirestore,
+      toFirestore: (Sleeprivation_Day tempday, _) => tempday.toFirestore(),
+    );
+
+    var newdaydata = await todayref.get();
+
+    //empty logs before re-instantiating from database
+    this.logs =[];
+    for (var docSnapshot in newdaydata.docs){
+      Sleeprivation_Day newday = docSnapshot.data() as Sleeprivation_Day;
+      int? days_between_dates = newday.date?.difference(DateTime.now()).inDays;
+      if( days_between_dates!= null && days_between_dates >=-7 && days_between_dates <=-1){
+        this.logs.add(newday);
+
+        //log(days_between_dates.toString());
+        //newday.debuglog();
+      }
+    }
+
+  }
+  //potentially set all logs? could be dangerous but useful for debugging
+
+
+  // get a list of JUST sleep objects from logs
+  List<Sleep> getSleepListFromLogs(){
+    List<Sleep> sleeplist= [];
+    for (final t in this.logs){
+
+      sleeplist.add(t.getSleep());
+    }
+
+    return sleeplist;
+
+  }
+
 
 
   Future<void> pushTodayIntoLogsDB() async{
@@ -466,10 +516,28 @@ class Personal_Model {
     //Maybe set today to a null day after to rest?
   }
 
-  //TODO retrieve 7 most recent logs
-  //just do like all logs, but limit to 7 and add/don't add to logs based on query
+  Future<void> pushDayIntoLogsDB(Sleeprivation_Day day) async{
+    //push given Sleeprivation Day day into logs array and into DB logs array
 
-  //potentially set all logs? could be dangerous but useful for debugging
+    final DateFormat formatter = DateFormat('yyyy-MM-dd');
+    final String formatted_date = formatter.format(day.date as DateTime); //ensures entries are just date, time not included
+
+    //set reference
+    final todayref = FirebaseFirestore.instance.collection("users")
+        .doc(this.name)
+        .collection("Day_Logs")
+        .doc(formatted_date)
+        .withConverter(
+      fromFirestore: Sleeprivation_Day.fromFirestore,
+      toFirestore: (Sleeprivation_Day tempday, _) => tempday.toFirestore(),
+    );
+
+    //update goal DB
+    await todayref.set(day);
+
+    this.logs.add(day);
+    //Maybe set today to a null day after to rest?
+  }
 
 
   static Future<bool> checkForUser(String username) async{
@@ -543,7 +611,9 @@ class Personal_Model {
     await temp.updateTodayFromDB();
 
     //load Logs
-    await temp.retrieveAllLogsDB();
+    //await temp.retrieveAllLogsDB();
+    await temp.retrieveLastWeekLogs();
+
 
     //save and return
     return temp;

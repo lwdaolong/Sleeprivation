@@ -75,12 +75,6 @@ void main() async {
 
 
 
-
-
-
-
-
-
   Sleep testsleep = Sleep.parse("2023-03-09 14:11:06.039", "2023-03-13 14:11:06.039", "60");
 
   Sleeprivation_Day testday = new Sleeprivation_Day(DateTime.parse("2023-03-09 22:16:40.805"), caftest, testsleep, Tiredness(7), Activity(9250));
@@ -90,25 +84,21 @@ void main() async {
   //new_user.debuglog();
 
 
+
+
   await new_user?.pushTodayIntoLogsDB();
-  await new_user?.retrieveAllLogsDB();
+  //await new_user?.retrieveAllLogsDB();
+  await new_user?.retrieveLastWeekLogs();
   //print('log length');
   //new_user?.debuglog();
 
+  SleepRecommendationTuple? sleeprecommendation = new_user?.getSleepRecommendationTuple( 1);
+  print(sleeprecommendation?.rec_bedtime);
+  print(sleeprecommendation?.loss);
 
-  /*
-  final week_log = [
-  Sleeprivation_Day(DateTime.now(), caftest, ideal, new Tiredness(6), new Activity(1000)),
-    Sleeprivation_Day(DateTime.now(), caftest, ideal, new Tiredness(6), new Activity(1000)),
-    Sleeprivation_Day(DateTime.now(), caftest, Sleep.parse("2023-03-10 22:11:06.039", "2023-03-11 08:11:06.039", "100"), new Tiredness(5), new Activity(1000)),
-    Sleeprivation_Day(DateTime.now(), caftest, Sleep.parse("2023-03-11 23:11:06.039", "2023-03-12 08:11:06.039", "100"), new Tiredness(6), new Activity(1000)),
-    Sleeprivation_Day(DateTime.now(), caftest, Sleep.parse("2023-03-12 00:11:06.039", "2023-03-13 08:11:06.039", "100"), new Tiredness(8), new Activity(1000)),
-    Sleeprivation_Day(DateTime.now(), caftest, Sleep.parse("2023-03-13 01:11:06.039", "2023-03-14 09:11:06.039", "100"), new Tiredness(8), new Activity(1000)),
-    Sleeprivation_Day(DateTime.now(), caftest, Sleep.parse("2023-03-14 23:11:06.039", "2023-03-15 09:11:06.039", "100"), new Tiredness(10), new Activity(1000)),
-    Sleeprivation_Day(DateTime.now(), caftest, Sleep.parse("2023-03-15 01:11:06.039", "2023-03-16 08:11:06.039", "100"), new Tiredness(9), new Activity(1000)),
-    Sleeprivation_Day(DateTime.now(), caftest, Sleep.parse("2023-03-16 22:11:06.039", "2023-03-17 08:11:06.039", "100"), new Tiredness(5), new Activity(1000)),
-  ];
-   */
+
+
+
 
   //!!!!!!!!!!!!!!
 
