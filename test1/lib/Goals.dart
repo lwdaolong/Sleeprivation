@@ -117,11 +117,19 @@ class Goals {
 
     }
 
+    static Goals frontEndParse(int desiredsleepduration, String waketime){
+      var splitstr = waketime.split(":");
+      var hours = int.parse(splitstr[0]);
+      var minutes = int.parse(splitstr[1]);
+
+      TimeOfDay new_time_obj = TimeOfDay(hour: hours, minute: minutes);
+      return Goals(desiredsleepduration, new_time_obj);
+    }
+
 }
 
 /*
 Future<Goals> fromFirestore() async {
-    //TODO make modular
     final docRed = FirebaseFirestore.instance.collection("testing_new").doc("newGoal");
     var data;
 

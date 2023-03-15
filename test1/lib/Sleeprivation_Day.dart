@@ -40,6 +40,10 @@ class Sleeprivation_Day {
     this.date = date;
   }
 
+  void SetDateByString(String s){
+    this.date = DateTime.parse(s);
+  }
+
   DateTime? getDate(){
     return this.date;
   }
@@ -48,16 +52,33 @@ class Sleeprivation_Day {
     this.caffeine = caffeine;
   }
 
+  void SetCaffeineByString(String s){
+    this.caffeine = new Caffeine(caffeine_time:DateTime.parse(s));
+  }
+
   void setSleep(Sleep sleep){
     this.sleep = sleep;
+  }
+
+  void setSleepByString(String bedtime, String waketime, String sleepqual){
+    this.sleep = Sleep.parse(bedtime, waketime, sleepqual);
+
   }
 
   void setTiredness(Tiredness tiredness){
     this.tiredness = tiredness;
   }
 
+  void setTirednessByString(String s){
+    this.tiredness = Tiredness.parse(s);
+  }
+
   void setActivity(Activity activity){
     this.activity = activity;
+  }
+
+  void setActivityByString(String s){
+    this.activity = Activity.parse(s);
   }
 
   Caffeine? getCaffeine(){

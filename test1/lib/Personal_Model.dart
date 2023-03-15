@@ -18,12 +18,51 @@ import 'dart:developer';
 
 import 'dart:math' hide log;
 
+abstract class Recommendation {
+  late final double loss;
 
-class SleepRecommendationTuple {
+  void debuglog();
+}
+
+class SleepRecommendationTuple extends Recommendation{
   final TimeOfDay rec_bedtime;
   final double loss;
 
   SleepRecommendationTuple(this.rec_bedtime,this.loss);
+
+  void debuglog(){
+    log("Sleep Recommendation");
+    log(rec_bedtime.toString());
+    log(loss.toString());
+  }
+
+}
+
+class CaffeineRecommendationTuple extends Recommendation{
+  final TimeOfDay rec_caffeine;
+  final double loss;
+
+  CaffeineRecommendationTuple(this.rec_caffeine,this.loss);
+
+  void debuglog(){
+    log("Caffeine Recommendation");
+    log(rec_caffeine.toString());
+    log(loss.toString());
+  }
+
+}
+
+class StepReccomendationTuple extends Recommendation{
+  final int rec_steps;
+  final double loss;
+
+  StepReccomendationTuple(this.rec_steps,this.loss);
+
+  void debuglog(){
+    log("Step Recommendation");
+    log(rec_steps.toString());
+    log(loss.toString());
+  }
 
 }
 
@@ -65,6 +104,28 @@ class Personal_Model {
     this.today = today;
   }
 
+  List<Recommendation> getRankedRecommendations(){
+    List<Recommendation> unordered_recs = [
+      getSleepRecommendationTuple(1),
+      getCaffeineRecommendationTuple(1),
+      new StepReccomendationTuple(20,90) //TODO put proper thing
+    ];
+
+    Map map= {0:unordered_recs[0].loss, 1:unordered_recs[1].loss, 2:unordered_recs[2].loss };
+    var sortedByValueMap = Map.fromEntries(
+        map.entries.toList()..sort((e1, e2) => e1.value.compareTo(e2.value)));
+    List<Recommendation> ordered_recs = [];
+
+    List indexorder =
+    sortedByValueMap.entries.map( (entry) => entry.key).toList();
+
+    for(final index in indexorder){
+      ordered_recs.add(unordered_recs[index]);
+    }
+    return new List.from(ordered_recs.reversed);
+  }
+
+
 
   //ENSURE USER IS LOADED/ logged in before this is called
   // Finds the K-nearest neighbors of the user's inputted sleep time duration goal
@@ -85,6 +146,7 @@ class Personal_Model {
 
     //add ideal vectors to logs to weight the average
     Sleep ideal = Sleep.fromGoal(goal);
+    sleepTuples.add(ideal);
     sleepTuples.add(ideal);
     sleepTuples.add(ideal);
 
@@ -122,6 +184,20 @@ class Personal_Model {
     if(bedtime_minute_representation < 12*60){ //maybe fenceposting?
       bedtime_minute_representation += 24*60;
     }
+    return bedtime_minute_representation;
+  }
+
+  int getSpecialBedTimeMinuteRepresentation2(DateTime? bedtime){
+    DateTime bedtime2;
+    if(bedtime == null){
+      bedtime2 = DateTime.now();
+    }else{
+      bedtime2 = bedtime;
+    }
+
+    //helper function, don't use on its own
+    int bedtime_minute_representation =0;
+    bedtime_minute_representation += (bedtime2.minute + bedtime2.hour*60)!;
     return bedtime_minute_representation;
   }
 
@@ -184,21 +260,64 @@ class Personal_Model {
 
   }
 
-  //maybe return a tuple of the actual recommendation and a measurable loss/utility)
-  void getCaffeineRecomendation(){
-    //based on metric from @source, should not consume caffeine X hours before bedtime
-    //based on usual consumption in combination with general recommendation
-    //TODO
 
-    //based on some metric, schedule a caffeine recommendation x hours
-    //before bedtime
+  CaffeineRecommendationTuple getCaffeineRecommendationTuple(int idealweight){
+    Caffeine finalcaftime = Caffeine.fromGoal(this.goals);
+    List<Caffeine>? caflist = getCaffeineListFromLogs();
+
+
+
+    //add ideal vectors to logs to weight the average
+    caflist.add(finalcaftime);
+    caflist.add(finalcaftime);
+    caflist.add(finalcaftime);
+
+    //for the sake of this functions, sleeptimes will be treated on a 48 hour scale
+
+
+    double caftime_avg = 0;
 
     //if caffeine has already been consumed
     //rescind the notification
 
-    //if no caffeine has been consumed
-    //send a notfication for a last chance
+    int caffinalminuterep = getSpecialBedTimeMinuteRepresentation2(finalcaftime.caffeine_time);
+
+
+    /*
+    int caf_time_instance = getSpecialBedTimeMinuteRepresentation2(t.getCaffeineTime());
+      if(caf_time_instance >= caffinalminuterep){
+        log(caf_time_instance.toString());
+        caftime_avg += caf_time_instance;
+        i +=1;
+      }
+     */
+    for (final t in caflist) {
+      //check if they drink caffeine before the suggested time
+      caftime_avg += getSpecialBedTimeMinuteRepresentation2(t.getCaffeineTime());
+    }
+
+    //below three values represents a point in space, but the bedtime_avg is the actual recommendation
+    caftime_avg = caftime_avg/caflist.length;
+
+    TimeOfDay caftime_rec = getTimeOfDayFromSpecialMinuteRepresentation(caftime_avg.toInt());
+
+    //Calculate the loss of that recommendation
+    final distance = (getSpecialBedTimeMinuteRepresentation2(finalcaftime.getCaffeineTime()) - caftime_avg).abs();
+
+    return CaffeineRecommendationTuple(caftime_rec, distance * idealweight);
+
+    //T WHEN READING THE RECOMMENDATION, IF THE RECOMMENDATION IS EQUAL TO THE IDEAL
+    //T THEN CHANGE THE WORDING TO "IF YOU WANT TO" DRINK CAFFEINE, DRINK BY ideal time
+    //T AND IF RECOMMENDATION LOSS IS HIGH, then change to "Drink caffeine by this time"
+    //T SO THAT RECS ARE PERSONALIZED TO HABITS
+
+    //TODO WHEN PRINTING TO FRONT END, DO ANOTHER CHECK TO SEE IF AVERAGE
+    //TODO CAFFEINE ALIGNS WITH USER GOALS
+    //TODO IF AVERAGE IS ALIGNED THEN TELL USER GOOD JOB: HERES YOUR AVERAGE CAFFEINE TIME, KEEP DRINKKING BEFORE 3:00 PM FOR GOOD REST
+    //TODO OTHERWISE, RECOMMEND USER CAFFEINE TIME SLIGHTLY NUDGED
+
   }
+
 
   //maybe return a tuple of the actual recommendation and a measurable loss/utility)
   void getActivityRecommendation(){
@@ -491,6 +610,18 @@ class Personal_Model {
 
   }
 
+  // get a list of JUST sleep objects from logs
+  List<Caffeine> getCaffeineListFromLogs(){
+    List<Caffeine> caflist= [];
+    for (final t in this.logs){
+
+      caflist.add(t.getCaffeine());
+    }
+
+    return caflist;
+
+  }
+
 
 
   Future<void> pushTodayIntoLogsDB() async{
@@ -648,6 +779,7 @@ class Personal_Model {
 
 
 }
+
 
 
 

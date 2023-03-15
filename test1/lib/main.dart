@@ -73,83 +73,62 @@ void main() async {
   */
 
 
-
-
-  Sleep testsleep = Sleep.parse("2023-03-09 14:11:06.039", "2023-03-13 14:11:06.039", "60");
-
-  Sleeprivation_Day testday = new Sleeprivation_Day(DateTime.parse("2023-03-09 22:16:40.805"), caftest, testsleep, Tiredness(7), Activity(9250));
-
-  new_user?.today = testday;
-
-  //new_user.debuglog();
-
-
-
-
-  await new_user?.pushTodayIntoLogsDB();
-  //await new_user?.retrieveAllLogsDB();
-  await new_user?.retrieveLastWeekLogs();
-  //print('log length');
-  //new_user?.debuglog();
-
+  /*
+  //Get BedTime Recommendation Example
   SleepRecommendationTuple? sleeprecommendation = new_user?.getSleepRecommendationTuple( 1);
   print(sleeprecommendation?.rec_bedtime);
   print(sleeprecommendation?.loss);
 
+   */
+
+
+
+
+  //Sleep testsleep = Sleep.parse("2023-03-09 14:11:06.039", "2023-03-13 14:11:06.039", "60");
+  //Sleeprivation_Day testday = new Sleeprivation_Day(DateTime.parse("2023-03-09 22:16:40.805"), caftest, testsleep, Tiredness(7), Activity(9250));
+  //new_user?.today = testday;
+
+  //new_user.debuglog();
+
+
+  /*
+  //Caffeine Recommendation Example
+  Goals exampleGoals = new Goals(8*60, TimeOfDay(hour:8,minute: 0));
+
+  CaffeineRecommendationTuple? cafrec = new_user?.getCaffeineRecommendationTuple(1);
+  print(cafrec?.loss);
+  print(cafrec?.rec_caffeine.toString());
+
+   */
+
+
+  List<Recommendation>? temprecs = new_user?.getRankedRecommendations();
+  for(final rec in temprecs!){
+    rec.debuglog();
+  }
 
 
 
 
   //!!!!!!!!!!!!!!
-
-  Goals testgoal = new Goals(8*60, TimeOfDay(hour: 7,minute: 00));
-
-
-  // Define the list of sleep tuples
-  final sleep_log = [
-    Sleep.parse("2023-03-10 22:11:06.039", "2023-03-11 08:11:06.039", "0"),
-    Sleep.parse("2023-03-11 23:11:06.039", "2023-03-12 08:11:06.039", "0"),
-    Sleep.parse("2023-03-12 00:11:06.039", "2023-03-13 08:11:06.039", "0"),
-    Sleep.parse("2023-03-13 01:11:06.039", "2023-03-14 09:11:06.039", "0"),
-    Sleep.parse("2023-03-14 23:11:06.039", "2023-03-15 09:11:06.039", "0"),
-    Sleep.parse("2023-03-15 01:11:06.039", "2023-03-16 08:11:06.039", "0"),
-    Sleep.parse("2023-03-16 22:11:06.039", "2023-03-17 08:11:06.039", "0"),
-  ];
-
-
-  //SleepRecommendationTuple ihopethisworks = getSleepRecommendationTuple(sleep_log, testgoal, 1);
-  //print(ihopethisworks.loss);
-  //print(ihopethisworks.rec_bedtime.toString());
-
-  // Find the 3 most ideal bedtimes closest to the user's sleep duration goal
-  //final idealTuples = findIdealTuples(sleepTuples, sleepDurationGoal, 3);
-
-  // Calculate the average bedtime of the 3 most ideal tuples
-  //final averageBedtime = idealTuples.map((t) => t.bedtime).reduce((a, b) => a + b) / idealTuples.length;
-
-  // Print the average bedtime
-  //print('Average bedtime of the 3 most ideal tuples: $averageBedtime:00');
-
-
-
   //playground
-
-
   runApp(const MyApp());
+}
+
+int getSpecialBedTimeMinuteRepresentation(DateTime bedtime){
+  //helper function, don't use on its own
+  int bedtime_minute_representation =0;
+  bedtime_minute_representation += bedtime.minute + bedtime.hour*60;
+  if(bedtime_minute_representation < 12*60){ //maybe fenceposting?
+    bedtime_minute_representation += 24*60;
+  }
+  return bedtime_minute_representation;
 }
 
 
 
 
 
-
-
-
-
-
-
-
-//AAAHHAHAHHAHAHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH PLAYGROUND^^ TODO MOVE EVERYTHING ABOVE INTO OTHER MODULES
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

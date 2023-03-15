@@ -6,6 +6,7 @@ import 'firebase_options.dart';
 import 'package:intl/intl.dart';
 import 'dart:developer';
 //import 'dart:html';
+import 'package:test1/Goals.dart';
 
 
 class Caffeine {
@@ -21,6 +22,7 @@ class Caffeine {
   DateTime? getCaffeineTime(){
     return this.caffeine_time;
   }
+
 
   void setCaffeineTime(DateTime caffeine_time){
     this.caffeine_time = caffeine_time;
@@ -93,6 +95,22 @@ class Caffeine {
     return {
       if (caffeine_time != null) "caffeine_time": caffeine_time,
     };
+  }
+
+  static Caffeine fromGoal(Goals goal){
+    //an ideal caffeine time according to Google
+    //is no less than 6 hours before bedtime
+    //we will be using this metric to calculate a timestamp for the
+    //LAST time you drink caffeine
+
+    TimeOfDay? bt = goal.calculateAppropriateBedTime();
+
+    //scuffed
+    DateTime now = DateTime.now();
+    DateTime bedtime = DateTime(now.year,now.month,now.day,bt.hour,bt.minute);
+    DateTime caffeine_final_time = bedtime.add(Duration(hours: -6));
+
+    return new Caffeine(caffeine_time: caffeine_final_time);
   }
 
 
