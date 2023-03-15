@@ -108,7 +108,7 @@ class Personal_Model {
     List<Recommendation> unordered_recs = [
       getSleepRecommendationTuple(1),
       getCaffeineRecommendationTuple(1),
-      getActivityRecommendation(30)
+      getActivityRecommendation(25)
     ];
 
     Map map= {0:unordered_recs[0].loss, 1:unordered_recs[1].loss, 2:unordered_recs[2].loss };
@@ -347,7 +347,7 @@ class Personal_Model {
 
     List<Activity> actlist = getActivityListFromLogs();
 
-    const int idealsteps = 5000;
+    const int idealsteps = 8200;
     Activity ideal_activity = Activity(idealsteps);
 
     actlist.add(ideal_activity);
