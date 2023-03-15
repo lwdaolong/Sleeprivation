@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:overlay_support/overlay_support.dart';
 import 'globals.dart' as globals;
+import 'Personal_Model.dart';
 
 // Define a custom Form widget.
 class LoginForm extends StatefulWidget {
@@ -28,15 +32,13 @@ class MyLoginForm extends State<LoginForm> {
     if (!form.validate()) {
     } else {
       form.save();
-      print(_username);
-      Navigator.of(context)
-          .pushNamedAndRemoveUntil('/home', ModalRoute.withName('/home'));
-      // if (_password == "password") {
-      //   SharedPreferences prefs = await SharedPreferences.getInstance();
-      //   prefs.setString("username", _email);
-      //   Navigator.pushNamedAndRemoveUntil(
-      //       context, '/home', ModalRoute.withName('/home'));
-      // }
+      Personal_Model? new_user = await Personal_Model.loginUser("$_username");
+      if (new_user == null) {
+        showSimpleNotification(Text("User does not exist"));
+      } else {
+        Navigator.of(context)
+            .pushNamedAndRemoveUntil('/home', ModalRoute.withName('/home'));
+      }
     }
   }
 
