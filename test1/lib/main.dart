@@ -25,12 +25,39 @@ import 'Sleep.dart';
 
 import 'dart:math';
 
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   NotificationService().initNotification();
   await Firebase.initializeApp();
   runApp(const MyApp());
 }
+
+
+
+Future<void> increaseStepCountWhileAppRunning(Personal_Model user) async {
+  if(user.getToday().getActivity() == null){
+    user.getToday().setActivity( Activity(0));
+  }
+
+  int? stepCountTemp = user.getToday().getActivity()?.steps;
+  int stepCount =0;
+  if(stepCountTemp != null){
+    stepCount = stepCountTemp;
+  }
+  Random random = new Random();
+
+  while (true) {
+    int intervalSeconds = random.nextInt(10) + 1; // Random interval between 1 and 5 seconds
+    await Future.delayed(Duration(seconds: intervalSeconds)); // Wait for random interval
+    int stepIncrease = random.nextInt(50) + 1; // Random step increase between 1 and 50
+    stepCount += stepIncrease;
+    user.getToday().getActivity()?.setSteps(stepCount);
+    //print('Step count: $stepCount');
+  }
+}
+
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
