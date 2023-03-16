@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'rectab.dart';
+import 'package:overlay_support/overlay_support.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -45,7 +48,8 @@ class _MyHomeTab extends State<HomeTab> {
                     var finishedDataEntry = await Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => EnterDataModal(),
+                        // builder: (context) => EnterDataModal(),
+                        builder: (context) => DailyDataForm(),
                       ),
                     );
                     if (finishedDataEntry) {
@@ -62,73 +66,125 @@ class _MyHomeTab extends State<HomeTab> {
   }
 }
 
-class EnterDataModal extends StatefulWidget {
-  const EnterDataModal({super.key});
+class DailyDataForm extends StatefulWidget {
+  DailyDataForm({super.key});
+
   @override
-  State<EnterDataModal> createState() => _EnterDataModal();
+  MyDailyDataForm createState() {
+    return MyDailyDataForm();
+  }
 }
 
-class _EnterDataModal extends State<EnterDataModal> {
+class MyDailyDataForm extends State<DailyDataForm> {
+  final _DailyDataFormKey = GlobalKey<FormState>();
+  double _sleepScore = 5;
+  TimeOfDay? sleepTime;
+  TimeOfDay? wakeTime;
+
+  void _handleSubmitted() async {
+    final FormState form = _DailyDataFormKey.currentState!;
+
+    if (sleepTime == null || wakeTime == null) {
+      showSimpleNotification(const Text("Please enter sleep and wake times"));
+    } else {
+      form.save();
+      print("$_sleepScore");
+      print(sleepTime);
+      print(wakeTime);
+      Navigator.pop(context, true);
+    }
+    // }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // return Container(child: Center(child: Container(child: Text('home tab'))));
+    // Build a Form widget using the _formKey created above.
     return Scaffold(
         appBar: AppBar(
           title: Text('Enter Data'),
         ),
         body: Padding(
           padding: const EdgeInsets.all(24.0),
-          child: ListView(
-            scrollDirection: Axis.vertical,
-            children: [
-              Text('How would you rate the quality of your sleep last night?',
-                  style: Theme.of(context).textTheme.bodyLarge),
-              // SizedBox(height: 10),
-              SleepRatingSlider(),
-              Column(
-                children: [
-                  OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18.0),
+          child: Form(
+            key: _DailyDataFormKey,
+            child: ListView(
+              scrollDirection: Axis.vertical,
+              children: [
+                Text('How would you rate the quality of your sleep last night?',
+                    style: Theme.of(context).textTheme.bodyLarge),
+                // SizedBox(height: 10),
+                // SleepRatingSlider(),
+                Slider(
+                  value: _sleepScore,
+                  max: 10,
+                  divisions: 10,
+                  label: _sleepScore.round().toString(),
+                  onChanged: (double value) {
+                    setState(() {
+                      _sleepScore = value;
+                    });
+                  },
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(18.0),
+                          ),
+                          side: BorderSide(width: 1, color: Colors.red),
                         ),
-                        side: BorderSide(width: 1),
-                      ),
-                      child: Text('Submit data',
-                          style: Theme.of(context).textTheme.bodyLarge),
-                      onPressed: () {
-                        Navigator.pop(context, true);
-                      }),
-                ],
-              ),
-            ],
+                        onPressed: () async {
+                          sleepTime = await showTimePicker(
+                            initialTime: TimeOfDay.now(),
+                            context: context,
+                          );
+                          showSimpleNotification(Text(
+                              'Slept at ${sleepTime!.hour.toString().padLeft(2, '0')}:${sleepTime!.minute.toString().padLeft(2, '0')}!'));
+                        },
+                        child: Text('Enter Sleep Time')),
+                    OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(18.0),
+                          ),
+                          side: BorderSide(width: 1, color: Colors.red),
+                        ),
+                        onPressed: () async {
+                          wakeTime = await showTimePicker(
+                            initialTime: TimeOfDay.now(),
+                            context: context,
+                          );
+                          showSimpleNotification(Text(
+                              'Woke up at ${wakeTime!.hour.toString().padLeft(2, '0')}:${wakeTime!.minute.toString().padLeft(2, '0')}!'));
+                        },
+                        child: Text('Enter Wake Time'))
+                  ],
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                Column(
+                  children: [
+                    OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(18.0),
+                          ),
+                          side: BorderSide(width: 1),
+                        ),
+                        child: Text('Submit data',
+                            style: Theme.of(context).textTheme.bodyLarge),
+                        // onPressed: () {
+                        //   Navigator.pop(context, true);
+                        // }),
+                        onPressed: _handleSubmitted)
+                  ],
+                ),
+              ],
+            ),
           ),
         ));
-  }
-}
-
-class SleepRatingSlider extends StatefulWidget {
-  const SleepRatingSlider({super.key});
-
-  @override
-  State<SleepRatingSlider> createState() => _SleepRatingSlider();
-}
-
-class _SleepRatingSlider extends State<SleepRatingSlider> {
-  double _currentSliderValue = 5;
-
-  @override
-  Widget build(BuildContext context) {
-    return Slider(
-      value: _currentSliderValue,
-      max: 10,
-      divisions: 10,
-      label: _currentSliderValue.round().toString(),
-      onChanged: (double value) {
-        setState(() {
-          _currentSliderValue = value;
-        });
-      },
-    );
   }
 }
