@@ -1,9 +1,11 @@
 import 'dart:io';
 
+import 'Sleep.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'rectab.dart';
 import 'package:overlay_support/overlay_support.dart';
+import 'package:test1/Sleeprivation_Day.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -88,6 +90,14 @@ class MyDailyDataForm extends State<DailyDataForm> {
       showSimpleNotification(const Text("Please enter sleep and wake times"));
     } else {
       form.save();
+      Sleeprivation_Day? yest = await globals.loggedInUser?.retrieveYesterday();
+      DateTime? bedtime =
+          globals.loggedInUser?.getDateTimeFromTimeOfDay(sleepTime!);
+      DateTime? waketime =
+          globals.loggedInUser?.getDateTimeFromTimeOfDay(wakeTime!);
+      yest!.setSleep(Sleep(bedtime!, waketime!, _sleepScore.toInt()));
+      await globals.loggedInUser?.setSleeprivationDayinLogsDB(yest);
+
       print("$_sleepScore");
       print(sleepTime);
       print(wakeTime);

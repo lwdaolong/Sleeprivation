@@ -36,6 +36,7 @@ class MyLoginForm extends State<LoginForm> {
       if (new_user == null) {
         showSimpleNotification(Text("User does not exist"));
       } else {
+        globals.loggedInUser = new_user;
         Navigator.of(context)
             .pushNamedAndRemoveUntil('/home', ModalRoute.withName('/home'));
       }
