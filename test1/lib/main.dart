@@ -25,7 +25,6 @@ import 'Sleep.dart';
 
 import 'dart:math';
 
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   NotificationService().initNotification();
@@ -33,31 +32,39 @@ void main() async {
   runApp(const MyApp());
 }
 
-
+Future<void> saveUserToDBOnInterval(Personal_Model user) async {
+  if (user != null) {
+    while (true) {
+      await Future.delayed(Duration(minutes: 1));
+      user.saveUserDetailsDB();
+    }
+  }
+}
 
 Future<void> increaseStepCountWhileAppRunning(Personal_Model user) async {
-  if(user.getToday().getActivity() == null){
-    user.getToday().setActivity( Activity(0));
+  if (user.getToday().getActivity() == null) {
+    user.getToday().setActivity(Activity(0));
   }
 
   int? stepCountTemp = user.getToday().getActivity()?.steps;
-  int stepCount =0;
-  if(stepCountTemp != null){
+  int stepCount = 0;
+  if (stepCountTemp != null) {
     stepCount = stepCountTemp;
   }
   Random random = new Random();
 
   while (true) {
-    int intervalSeconds = random.nextInt(10) + 1; // Random interval between 1 and 5 seconds
-    await Future.delayed(Duration(seconds: intervalSeconds)); // Wait for random interval
-    int stepIncrease = random.nextInt(50) + 1; // Random step increase between 1 and 50
+    int intervalSeconds =
+        random.nextInt(10) + 1; // Random interval between 1 and 5 seconds
+    await Future.delayed(
+        Duration(seconds: intervalSeconds)); // Wait for random interval
+    int stepIncrease =
+        random.nextInt(50) + 1; // Random step increase between 1 and 50
     stepCount += stepIncrease;
     user.getToday().getActivity()?.setSteps(stepCount);
     //print('Step count: $stepCount');
   }
 }
-
-
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -139,19 +146,33 @@ class _MyHomePageState extends State<MyHomePage> {
   int _selectedPageIndex = 0;
   List<Widget> _tabOptions = <Widget>[HomeTab(), LogTab()];
 
+  Future<void> saveUserToDBOnInterval(Personal_Model user) async {
+    if (user != null) {
+      while (true) {
+        await Future.delayed(Duration(minutes: 1));
+        user.saveUserDetailsDB();
+        setState(() {
+          globals.currentSteps =
+              globals.loggedInUser!.today.getActivity()!.getSteps();
+        });
+      }
+    }
+  }
+
   void _onNavigationBarSelected(int index) {
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
       _selectedPageIndex = index;
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!globals.startedStepCountRefresh) {
+      saveUserToDBOnInterval(globals.loggedInUser!);
+      increaseStepCountWhileAppRunning(globals.loggedInUser!);
+      globals.startedStepCountRefresh = true;
+      print('started step count');
+    }
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),

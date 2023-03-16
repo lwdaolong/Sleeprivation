@@ -20,6 +20,10 @@ abstract class Recommendation {
   late final double loss;
 
   void debuglog();
+
+  String getTitle();
+
+  String getStringRecommendation();
 }
 
 class SleepRecommendationTuple extends Recommendation {
@@ -32,6 +36,17 @@ class SleepRecommendationTuple extends Recommendation {
     log("Sleep Recommendation");
     log(rec_bedtime.toString());
     log(loss.toString());
+  }
+
+  String getTitle() {
+    return "Bed Time Improvement";
+  }
+
+  String getStringRecommendation() {
+    String time =
+        "${rec_bedtime!.hour.toString().padLeft(2, '0')}:${rec_bedtime!.minute.toString().padLeft(2, '0')}";
+    return "Great job lately! To improve your sleep, try to get to bed by " +
+        time;
   }
 }
 
@@ -46,6 +61,21 @@ class CaffeineRecommendationTuple extends Recommendation {
     log(rec_caffeine.toString());
     log(loss.toString());
   }
+
+  String getTitle() {
+    return "Caffeine Consumption Time";
+  }
+
+  String getStringRecommendation() {
+    if (loss > 0) {
+      String time =
+          "${rec_caffeine!.hour.toString().padLeft(2, '0')}:${rec_caffeine!.minute.toString().padLeft(2, '0')}";
+      return "Great job lately! To improve your sleep, try not to drink caffeine after " +
+          time;
+    } else {
+      return "Keep up the good pace! You are consistently drinking caffeine long before your bed time!";
+    }
+  }
 }
 
 class StepReccomendationTuple extends Recommendation {
@@ -58,6 +88,18 @@ class StepReccomendationTuple extends Recommendation {
     log("Step Recommendation");
     log(rec_steps.toString());
     log(loss.toString());
+  }
+
+  String getTitle() {
+    return "Activity Level";
+  }
+
+  String getStringRecommendation() {
+    if (loss > 0) {
+      return "Great job lately! To improve your sleep, try to walk ${rec_steps.toString()} steps today!";
+    } else {
+      return "Keep up the good pace! You are consistently walking about ${rec_steps.toString()} steps per day, over the recommended 8200 steps per day!";
+    }
   }
 }
 

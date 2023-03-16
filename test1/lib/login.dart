@@ -4,6 +4,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'globals.dart' as globals;
 import 'Personal_Model.dart';
+import 'Sleeprivation_Day.dart';
 
 // Define a custom Form widget.
 class LoginForm extends StatefulWidget {
@@ -38,6 +39,21 @@ class MyLoginForm extends State<LoginForm> {
       } else {
         globals.loggedInUser = new_user;
         globals.allLogs = await new_user!.getAllLogsDB();
+        globals.recCards = globals.loggedInUser?.getRankedRecommendations();
+        for (final rec in globals.recCards!) {
+          rec.debuglog();
+        }
+        if (globals.loggedInUser!.today.getActivity()! == null) {
+          globals.currentSteps = 0;
+        } else {
+          globals.currentSteps =
+              globals.loggedInUser!.today.getActivity()!.getSteps();
+        }
+
+        Sleeprivation_Day lastDay = globals.allLogs![0];
+        if (lastDay.getSleep()!.sleep_start != null) {
+          globals.dataEntered = true;
+        }
 
         Navigator.of(context)
             .pushNamedAndRemoveUntil('/home', ModalRoute.withName('/home'));

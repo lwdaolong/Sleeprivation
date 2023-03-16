@@ -1,27 +1,25 @@
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import 'package:firebase_core/firebase_core.dart';
+import 'Activity.dart';
 import 'firebase_options.dart';
 import 'package:overlay_support/overlay_support.dart';
 
 import 'globals.dart' as globals;
+import 'logtab.dart' as logs;
+import 'Personal_Model.dart';
 
 class RecTab extends StatefulWidget {
   const RecTab({super.key});
 
-  // List<String> logs = <String>['bob', 'joe'];
   @override
   State<RecTab> createState() => _MyRecTab();
 }
 
 class _MyRecTab extends State<RecTab> {
-  List<String> recommendations = [
-    "Avoid Caffeine",
-    "Sleep Time",
-    "Wake Time",
-    "Eat Less Fatty!!",
-  ];
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -45,7 +43,8 @@ class _MyRecTab extends State<RecTab> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Icon(Icons.star),
-                            Text("${globals.sleepScore}",
+                            Text(
+                                "${(globals.allLogs![0].getSleep()!.sleep_quality / 10).toInt().toString()}/10",
                                 style: Theme.of(context).textTheme.titleLarge),
                           ])),
                   OutlinedButton(
@@ -72,13 +71,15 @@ class _MyRecTab extends State<RecTab> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text('Sleep Time: ${globals.temp}',
+                  Text(
+                      'Sleep: ${logs.getDateWithoutMilliSeconds(globals.allLogs![0].getSleep()!.sleep_start).toString()}',
                       style: Theme.of(context).textTheme.bodyMedium),
-                  Text('Wake Time: ${globals.temp}',
+                  Text(
+                      'Wake: ${logs.getDateWithoutMilliSeconds(globals.allLogs![0].getSleep()!.sleep_end).toString()}',
                       style: Theme.of(context).textTheme.bodyMedium),
-                  Text('Caffeine Intake: ${globals.temp}',
+                  Text('Last Caffeine: ${globals.lastCaffeine}',
                       style: Theme.of(context).textTheme.bodyMedium),
-                  Text('Number of Steps: ${globals.temp}',
+                  Text('Number of Steps: ${globals.currentSteps}',
                       style: Theme.of(context).textTheme.bodyMedium),
                 ],
               )
@@ -87,7 +88,7 @@ class _MyRecTab extends State<RecTab> {
         ),
         Expanded(
           child: ListView.builder(
-            itemCount: recommendations.length,
+            itemCount: globals.recCards!.length,
             itemBuilder: (context, index) {
               return Padding(
                 padding:
@@ -106,14 +107,14 @@ class _MyRecTab extends State<RecTab> {
                         child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
-                              Text('Recommendation',
+                              Text('Recommendation Priority ${index + 1}',
                                   style: Theme.of(context).textTheme.bodySmall),
-                              Text('${recommendations[index]}',
+                              Text('${globals.recCards![index].getTitle()}',
                                   style: Theme.of(context)
                                       .textTheme
                                       .headlineSmall),
                               Text(
-                                  'Recommendation text goes here, blah blah blah',
+                                  '${globals.recCards![index].getStringRecommendation()}',
                                   style:
                                       Theme.of(context).textTheme.bodyMedium),
                             ])),

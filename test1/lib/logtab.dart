@@ -8,6 +8,16 @@ import 'Personal_Model.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
+String getDateWithoutTime(DateTime d) {
+  final DateFormat formatter = DateFormat('yyyy-MM-dd');
+  return formatter.format(d); //ensures entries are just date, time not included
+}
+
+String getDateWithoutMilliSeconds(DateTime d) {
+  final DateFormat formatter = DateFormat('yyyy-MM-dd hh:mm');
+  return formatter.format(d); //ensures entries are just date, time not included
+}
+
 class LogTab extends StatefulWidget {
   const LogTab({super.key});
 
@@ -17,33 +27,8 @@ class LogTab extends StatefulWidget {
 }
 
 class _MyLogTab extends State<LogTab> {
-  String getDateWithoutTime(DateTime d) {
-    final DateFormat formatter = DateFormat('yyyy-MM-dd');
-    return formatter
-        .format(d); //ensures entries are just date, time not included
-  }
-
-  String getDateWithoutMilliSeconds(DateTime d) {
-    final DateFormat formatter = DateFormat('yyyy-MM-dd hh:mm');
-    return formatter
-        .format(d); //ensures entries are just date, time not included
-  }
-
   @override
   Widget build(BuildContext context) {
-    // for (final t in globals.allLogs!) {
-    //   print('=====');
-    //   print(t.getDate().toString());
-    //   if (t.didActivity()) print(t.getActivity()!.getSteps().toString());
-    //   if (t.hadCaffeine()) print(t.getCaffeine()!.caffeine_time.toString());
-
-    //   print(t.getSleep()!.sleep_start.toString());
-    //   print(t.getSleep()!.sleep_end.toString());
-    //   print(t.getSleep()!.sleep_quality.toString());
-    //   print(t.getSleep()!.sleep_duration.toString());
-    //   print('=====');
-    // }
-
     return ListView.builder(
       itemCount: globals.allLogs!.length,
       itemBuilder: (context, index) {
