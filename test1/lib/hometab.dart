@@ -95,7 +95,7 @@ class MyDailyDataForm extends State<DailyDataForm> {
           globals.loggedInUser?.getDateTimeFromTimeOfDay(sleepTime!);
       DateTime? waketime =
           globals.loggedInUser?.getDateTimeFromTimeOfDay(wakeTime!);
-      yest!.setSleep(Sleep(bedtime!, waketime!, _sleepScore.toInt()));
+      yest!.setSleep(Sleep(bedtime!, waketime!, _sleepScore.toInt() * 10));
       await globals.loggedInUser?.setSleeprivationDayinLogsDB(yest);
 
       print("$_sleepScore");

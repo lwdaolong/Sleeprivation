@@ -870,4 +870,27 @@ class Personal_Model {
     }
     return closestday;
   }
+
+  Future<List<Sleeprivation_Day>> getAllLogsDB() async {
+    //set reference
+    final todayref = FirebaseFirestore.instance
+        .collection("users")
+        .doc(this.name)
+        .collection("Day_Logs")
+        .withConverter(
+          fromFirestore: Sleeprivation_Day.fromFirestore,
+          toFirestore: (Sleeprivation_Day tempday, _) => tempday.toFirestore(),
+        );
+
+    var newdaydata = await todayref.get();
+
+    //empty logs before re-instantiating from database
+    List<Sleeprivation_Day> temp = [];
+    for (var docSnapshot in newdaydata.docs) {
+      Sleeprivation_Day newday = docSnapshot.data() as Sleeprivation_Day;
+      temp.insert(0, newday);
+    }
+
+    return temp;
+  }
 }
