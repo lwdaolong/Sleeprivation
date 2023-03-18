@@ -97,6 +97,18 @@ class MyDailyDataForm extends State<DailyDataForm> {
           globals.loggedInUser?.getDateTimeFromTimeOfDay(wakeTime!);
       yest!.setSleep(Sleep(bedtime!, waketime!, _sleepScore.toInt() * 10));
       await globals.loggedInUser?.setSleeprivationDayinLogsDB(yest);
+      //re fetch data
+      globals.allLogs = await globals.loggedInUser!.getAllLogsDB();
+      globals.recCards = globals.loggedInUser?.getRankedRecommendations();
+      for (final rec in globals.recCards!) {
+        rec.debuglog();
+      }
+      if (globals.loggedInUser!.today.getActivity()! == null) {
+        globals.currentSteps = 0;
+      } else {
+        globals.currentSteps =
+            globals.loggedInUser!.today.getActivity()!.getSteps();
+      }
 
       print("$_sleepScore");
       print(sleepTime);

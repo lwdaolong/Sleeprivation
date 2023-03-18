@@ -32,14 +32,14 @@ void main() async {
   runApp(const MyApp());
 }
 
-Future<void> saveUserToDBOnInterval(Personal_Model user) async {
-  if (user != null) {
-    while (true) {
-      await Future.delayed(Duration(minutes: 1));
-      user.saveUserDetailsDB();
-    }
-  }
-}
+// Future<void> saveUserToDBOnInterval(Personal_Model user) async {
+//   if (user != null) {
+//     while (true) {
+//       await Future.delayed(Duration(minutes: 1));
+//       user.saveUserDetailsDB();
+//     }
+//   }
+// }
 
 Future<void> increaseStepCountWhileAppRunning(Personal_Model user) async {
   if (user.getToday().getActivity() == null) {

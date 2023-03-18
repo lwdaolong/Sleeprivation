@@ -25,7 +25,7 @@ class _MyRecTab extends State<RecTab> {
     return Column(
       children: <Widget>[
         Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -33,7 +33,7 @@ class _MyRecTab extends State<RecTab> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Today's Sleep Score:",
+                  Text("Your Sleep Score:",
                       style: Theme.of(context).textTheme.titleLarge),
                   Container(
                       margin: const EdgeInsets.symmetric(vertical: 8.0),
@@ -47,42 +47,72 @@ class _MyRecTab extends State<RecTab> {
                                 "${(globals.allLogs![0].getSleep()!.sleep_quality / 10).toInt().toString()}/10",
                                 style: Theme.of(context).textTheme.titleLarge),
                           ])),
-                  OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18.0),
-                        ),
-                        side: BorderSide(width: 1),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.add, color: Colors.black),
-                          Text('Log Caffeine',
-                              style: Theme.of(context).textTheme.bodyLarge),
-                        ],
-                      ),
-                      onPressed: () {
-                        showSimpleNotification(
-                          Text("Logged 1 serving of caffeine!"),
-                        );
-                      }),
                 ],
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                      'Sleep: ${logs.getDateWithoutMilliSeconds(globals.allLogs![0].getSleep()!.sleep_start).toString()}',
+                      'Last Night\'s Bedtime: ${logs.getDateWithoutMilliSeconds(globals.allLogs![0].getSleep()!.sleep_start).toString()}',
                       style: Theme.of(context).textTheme.bodyMedium),
                   Text(
-                      'Wake: ${logs.getDateWithoutMilliSeconds(globals.allLogs![0].getSleep()!.sleep_end).toString()}',
+                      'Today\'s Wake Time: ${logs.getDateWithoutMilliSeconds(globals.allLogs![0].getSleep()!.sleep_end).toString()}',
                       style: Theme.of(context).textTheme.bodyMedium),
-                  Text('Last Caffeine: ${globals.lastCaffeine}',
+                  Text(
+                      'Last Caffeine Intake Today: ${globals.lastCaffeine == null ? "none" : logs.getDateWithoutMilliSeconds(globals.lastCaffeine!)}',
                       style: Theme.of(context).textTheme.bodyMedium),
-                  Text('Number of Steps: ${globals.currentSteps}',
+                  Text('Current Number of Steps: ${globals.currentSteps}',
                       style: Theme.of(context).textTheme.bodyMedium),
                 ],
               )
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
+          child: Row(
+            children: [
+              OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18.0),
+                    ),
+                    side: BorderSide(width: 1),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.add, color: Colors.black),
+                      Text('Log Caffeine',
+                          style: Theme.of(context).textTheme.bodyLarge),
+                    ],
+                  ),
+                  onPressed: () {
+                    showSimpleNotification(
+                      Text("Logged 1 serving of caffeine!"),
+                    );
+                    globals.loggedInUser!.setCaffeineToday();
+                    globals.lastCaffeine = DateTime.now();
+                  }),
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18.0),
+                      ),
+                      side: BorderSide(width: 1),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.refresh, color: Colors.black),
+                        Text('Refresh',
+                            style: Theme.of(context).textTheme.bodyLarge),
+                      ],
+                    ),
+                    onPressed: () {
+                      setState(() {});
+                    }),
+              ),
             ],
           ),
         ),

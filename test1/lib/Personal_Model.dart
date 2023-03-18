@@ -45,7 +45,7 @@ class SleepRecommendationTuple extends Recommendation {
   String getStringRecommendation() {
     String time =
         "${rec_bedtime!.hour.toString().padLeft(2, '0')}:${rec_bedtime!.minute.toString().padLeft(2, '0')}";
-    return "Great job lately! To improve your sleep, try to get to bed by " +
+    return "Nice work lately! To improve your sleep, try to get to bed by " +
         time;
   }
 }
@@ -96,7 +96,7 @@ class StepReccomendationTuple extends Recommendation {
 
   String getStringRecommendation() {
     if (loss > 0) {
-      return "Great job lately! To improve your sleep, try to walk ${rec_steps.toString()} steps today!";
+      return "Excellent job lately! To improve your sleep, try to walk ${rec_steps.toString()} steps today!";
     } else {
       return "Keep up the good pace! You are consistently walking about ${rec_steps.toString()} steps per day, over the recommended 8200 steps per day!";
     }

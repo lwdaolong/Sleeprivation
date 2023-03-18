@@ -14,7 +14,7 @@ String getDateWithoutTime(DateTime d) {
 }
 
 String getDateWithoutMilliSeconds(DateTime d) {
-  final DateFormat formatter = DateFormat('yyyy-MM-dd hh:mm');
+  final DateFormat formatter = DateFormat('hh:mm');
   return formatter.format(d); //ensures entries are just date, time not included
 }
 
