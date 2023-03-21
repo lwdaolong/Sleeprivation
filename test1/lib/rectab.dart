@@ -91,6 +91,9 @@ class _MyRecTab extends State<RecTab> {
                       Text("Logged 1 serving of caffeine!"),
                     );
                     globals.loggedInUser!.setCaffeineToday();
+                    globals.loggedInUser!
+                        .setTodayDB(globals.loggedInUser!.today);
+                    // globals.loggedInUser!.saveUserDetailsDB();
                     globals.lastCaffeine = DateTime.now();
                   }),
               Padding(

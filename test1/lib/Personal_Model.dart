@@ -432,7 +432,8 @@ class Personal_Model {
   }
 
   void setCaffeineToday() {
-    this.today.setCaffeine(new Caffeine());
+    // this.today.setCaffeine(new Caffeine());
+    this.today.setCaffeine(new Caffeine(caffeine_time: DateTime.now()));
   }
 
   void setSleepToday(String filePath) async {
@@ -702,11 +703,13 @@ class Personal_Model {
   }
   //potentially set all logs? could be dangerous but useful for debugging
 
-  // get a list of JUST sleep objects from logs
+// get a list of JUST sleep objects from logs
   List<Sleep> getSleepListFromLogs() {
     List<Sleep> sleeplist = [];
     for (final t in this.logs) {
-      sleeplist.add(t.getSleep());
+      if (t.sleep != null) {
+        sleeplist.add(t.getSleep());
+      }
     }
 
     return sleeplist;

@@ -52,13 +52,13 @@ class _MyLogTab extends State<LogTab> {
                             '${getDateWithoutTime(globals.allLogs![index].getDate()!).toString()}',
                             style: Theme.of(context).textTheme.bodySmall),
                         Text(
-                            'Sleep Quality: ${(globals.allLogs![index].getSleep()!.sleep_quality / 10).toInt().toString()}/10',
+                            'Sleep Quality: ${globals.allLogs![index].getSleep() == null ? "0" : (globals.allLogs![index].getSleep()!.sleep_quality / 10).toInt().toString()}/10',
                             style: Theme.of(context).textTheme.headlineSmall),
                         Text(
-                            'Sleep Time: ${getDateWithoutMilliSeconds(globals.allLogs![index].getSleep()!.sleep_start).toString()}',
+                            'Sleep Time: ${globals.allLogs![index].getSleep() == null ? "N/A" : getDateWithoutMilliSeconds(globals.allLogs![index].getSleep()!.sleep_start).toString()}',
                             style: Theme.of(context).textTheme.bodyMedium),
                         Text(
-                            'Wake Time: ${getDateWithoutMilliSeconds(globals.allLogs![index].getSleep()!.sleep_start).toString()}',
+                            'Wake Time: ${globals.allLogs![index].getSleep() == null ? "N/A" : getDateWithoutMilliSeconds(globals.allLogs![index].getSleep()!.sleep_end).toString()}',
                             style: Theme.of(context).textTheme.bodyMedium),
                         Text(
                             'Last Caffeine Intake: ${globals.allLogs![index].getCaffeine() == null ? 'no caffeine today' : getDateWithoutMilliSeconds(globals.allLogs![index].getCaffeine()!.caffeine_time!).toString()}',

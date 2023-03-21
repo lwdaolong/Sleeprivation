@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/services.dart';
 import 'package:overlay_support/overlay_support.dart';
+import 'package:test1/Goals.dart';
 import 'globals.dart' as globals;
 import 'Personal_Model.dart';
 import 'Sleeprivation_Day.dart';
@@ -41,28 +42,42 @@ class MyLoginForm extends State<LoginForm> {
       } else {
         globals.loggedInUser = new_user;
         globals.allLogs = await new_user!.getAllLogsDB();
+        // if (lastDay.getSleep() == null ||
+        //     lastDay.getSleep()!.sleep_start == null) {
+        //   globals.dataEntered = false;
+        // } else {
+        //   globals.dataEntered = true;
+        // }
+
+        // if (globals.dataEntered == true) {
         globals.recCards = globals.loggedInUser?.getRankedRecommendations();
         for (final rec in globals.recCards!) {
           rec.debuglog();
         }
-        if (globals.loggedInUser!.today.getActivity()! == null) {
+        if (globals.loggedInUser!.today.getActivity() == null) {
           globals.currentSteps = 0;
         } else {
           globals.currentSteps =
               globals.loggedInUser!.today.getActivity()!.getSteps();
         }
-
-        DateTime lastDay = globals.allLogs![0].getDate()!;
-        DateTime yesterday = DateTime.now().subtract(const Duration(days: 1));
-        // print(lastDay.getDate()!.day);
-        // print(DateTime.now().subtract(const Duration(days: 1)).day);
-        if (lastDay.day == yesterday.day &&
-            lastDay.month == yesterday.month &&
-            lastDay.year == yesterday.year) {
-          // print('hi');
-          globals.dataEntered = true;
+        // }
+        if (globals.allLogs!.isEmpty) {
+          globals.dataEntered = false;
+        } else {
+          Sleeprivation_Day lastDay = globals.allLogs![0];
+          if (lastDay.getSleep() == null) {
+            globals.dataEntered = false;
+          } else {
+            globals.dataEntered = true;
+          }
         }
-        // if (lastDay.getSleep()!.sleep_start != null) {
+
+        // DateTime lastDay = globals.allLogs![0].getDate()!;
+        // DateTime yesterday = DateTime.now().subtract(const Duration(days: 1));
+        // if (lastDay.day == yesterday.day &&
+        //     lastDay.month == yesterday.month &&
+        //     lastDay.year == yesterday.year) {
+        //   globals.dataEntered = true;
         // }
 
         Navigator.of(context)
@@ -163,18 +178,29 @@ class SignupForm extends StatefulWidget {
 class MySignupForm extends State<SignupForm> {
   final _SignupFormKey = GlobalKey<FormState>();
   int? goalSleepAmount;
-  TimeOfDay? goalSleepTime;
+  TimeOfDay? goalWakeTime;
+  String? newUsername;
   // TimeOfDay? wakeTime;
 
   void _handleSubmitted() async {
     final FormState form = _SignupFormKey.currentState!;
     form.save();
     print(goalSleepAmount);
-    print(goalSleepTime);
+    print(goalWakeTime);
+    print(newUsername);
 
-    if (goalSleepTime == null || goalSleepAmount == null) {
+    if (goalWakeTime == null || goalSleepAmount == null || newUsername == "") {
       showSimpleNotification(const Text("Please enter all data"));
     } else {
+      // PersonalMocreateNewUser(newUsername, goalSleepAmount);
+      Personal_Model? new_user = await Personal_Model.createNewUser(
+          newUsername!, Goals(goalSleepAmount!, goalWakeTime!));
+      if (new_user == null) {
+        showSimpleNotification(Text("User already exists"));
+      } else {
+        Navigator.pop(context, true);
+      }
+
       // form.save();
       //   Sleeprivation_Day? yest = await globals.loggedInUser?.retrieveYesterday();
       //   DateTime? bedtime =
@@ -198,7 +224,6 @@ class MySignupForm extends State<SignupForm> {
       //   print("$_sleepScore");
       //   print(sleepTime);
       //   print(wakeTime);
-      Navigator.pop(context, true);
     }
   }
 
@@ -219,11 +244,33 @@ class MySignupForm extends State<SignupForm> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
                 Text(
+                  "Please enter a new username",
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(32.0, 16.0, 32.0, 16.0),
+                  child: TextFormField(
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter some text';
+                      }
+                      return null;
+                    },
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: 'Username',
+                    ),
+                    onSaved: (String? value) {
+                      newUsername = value;
+                    },
+                  ),
+                ),
+                Text(
                   "Please enter desired sleep amount in minutes",
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(32.0, 16.0, 32.0, 32.0),
+                  padding: const EdgeInsets.fromLTRB(32.0, 16.0, 32.0, 16.0),
                   child: TextFormField(
                     keyboardType: TextInputType.number,
                     inputFormatters: <TextInputFormatter>[
@@ -259,14 +306,14 @@ class MySignupForm extends State<SignupForm> {
                       side: BorderSide(width: 1, color: Colors.red),
                     ),
                     onPressed: () async {
-                      goalSleepTime = await showTimePicker(
+                      goalWakeTime = await showTimePicker(
                         initialTime: TimeOfDay.now(),
                         context: context,
                       );
                       showSimpleNotification(Text(
-                          'Hope to sleep at ${goalSleepTime!.hour.toString().padLeft(2, '0')}:${goalSleepTime!.minute.toString().padLeft(2, '0')}!'));
+                          'Hope to sleep at ${goalWakeTime!.hour.toString().padLeft(2, '0')}:${goalWakeTime!.minute.toString().padLeft(2, '0')}!'));
                     },
-                    child: Text('Enter Desired Sleep Time')),
+                    child: Text('Enter Desired Wakeup Time')),
                 SizedBox(height: 10),
                 OutlinedButton(
                     style: OutlinedButton.styleFrom(

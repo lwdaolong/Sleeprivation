@@ -41,7 +41,7 @@ void main() async {
 //   }
 // }
 
-Future<void> increaseStepCountWhileAppRunning(Personal_Model user) async {
+Future<void> stepsAppRun(Personal_Model user) async {
   if (user.getToday().getActivity() == null) {
     user.getToday().setActivity(Activity(0));
   }
@@ -169,7 +169,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     if (!globals.startedStepCountRefresh) {
       saveUserToDBOnInterval(globals.loggedInUser!);
-      increaseStepCountWhileAppRunning(globals.loggedInUser!);
+      stepsAppRun(globals.loggedInUser!);
       globals.startedStepCountRefresh = true;
       print('started step count');
     }
